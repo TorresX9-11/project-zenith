@@ -31,52 +31,18 @@ export const scheduleReducer = (state: ScheduleState, action: ScheduleAction): S
     }
     
     case 'REMOVE_TIME_BLOCK': {
-      // Primero, obtener cualquier actividad que esté vinculada a este bloque
-      const updatedActivities = state.activities.map(activity => {
-        if (activity.timeBlockId === action.payload) {
-          // Desvincular la actividad del bloque eliminado
-          const { timeBlockId, ...rest } = activity;
-          return rest;
-        }
-        return activity;
-      });
-      
       return {
         ...state,
-        timeBlocks: state.timeBlocks.filter(block => block.id !== action.payload),
-        activities: updatedActivities
+        timeBlocks: state.timeBlocks.filter(block => block.id !== action.payload)
       };
     }
     
     case 'UPDATE_TIME_BLOCK': {
-      // Actualizar las actividades que están asociadas a este bloque
-      const updatedActivities = state.activities.map(activity => {
-        if (activity.timeBlockId === action.payload.id) {
-          // Asegurarse de que los campos opcionales tengan valores por defecto
-          return {
-            ...activity,
-            type: action.payload.activityType || activity.type,
-            name: action.payload.title || activity.name,
-            description: action.payload.description || activity.description || '',
-            preferredTime: {
-              startHour: parseInt(action.payload.startTime.split(':')[0]),
-              endHour: parseInt(action.payload.endTime.split(':')[0])
-            },
-            preferredDays: [action.payload.day]
-          };
-        }
-        return activity;
-      });
-      
       return {
         ...state,
         timeBlocks: state.timeBlocks.map(block =>
-          block.id === action.payload.id ? {
-            ...action.payload,
-            type: 'occupied' // Asegurarse de que el tipo sea 'occupied'
-          } : block
-        ),
-        activities: updatedActivities
+          block.id === action.payload.id ? action.payload : block
+        )
       };
     }
     
@@ -85,29 +51,6 @@ export const scheduleReducer = (state: ScheduleState, action: ScheduleAction): S
         ...action.payload,
         id: action.payload.id || uuidv4()
       };
-
-      // Si la actividad tiene preferredTime y preferredDays, crear un bloque de tiempo
-      if (newActivity.preferredTime && newActivity.preferredDays?.[0]) {
-        const timeBlock: TimeBlock = {
-          id: uuidv4(),
-          day: newActivity.preferredDays[0],
-          startTime: `${newActivity.preferredTime.startHour.toString().padStart(2, '0')}:00`,
-          endTime: `${newActivity.preferredTime.endHour.toString().padStart(2, '0')}:00`,
-          type: 'occupied',
-          title: newActivity.name,
-          description: newActivity.description || '',
-          activityType: newActivity.type
-        };
-        
-        newActivity.timeBlockId = timeBlock.id;
-        
-        return {
-          ...state,
-          activities: [...state.activities, newActivity],
-          timeBlocks: [...state.timeBlocks, timeBlock]
-        };
-      }
-      
       return {
         ...state,
         activities: [...state.activities, newActivity]
@@ -115,17 +58,6 @@ export const scheduleReducer = (state: ScheduleState, action: ScheduleAction): S
     }
     
     case 'REMOVE_ACTIVITY': {
-      // Al eliminar una actividad, eliminar también su bloque de tiempo asociado si existe
-      const activityToRemove = state.activities.find(a => a.id === action.payload);
-      
-      if (activityToRemove?.timeBlockId) {
-        return {
-          ...state,
-          activities: state.activities.filter(activity => activity.id !== action.payload),
-          timeBlocks: state.timeBlocks.filter(block => block.id !== activityToRemove.timeBlockId)
-        };
-      }
-      
       return {
         ...state,
         activities: state.activities.filter(activity => activity.id !== action.payload)
@@ -133,52 +65,11 @@ export const scheduleReducer = (state: ScheduleState, action: ScheduleAction): S
     }
     
     case 'UPDATE_ACTIVITY': {
-      const updatedActivity = action.payload;
-      let updatedTimeBlocks = state.timeBlocks;
-      
-      // Si la actividad tiene un bloque de tiempo asociado, actualizarlo
-      if (updatedActivity.timeBlockId) {
-        const blockToUpdate = state.timeBlocks.find(b => b.id === updatedActivity.timeBlockId);
-        if (blockToUpdate && updatedActivity.preferredTime && updatedActivity.preferredDays?.[0]) {
-          updatedTimeBlocks = state.timeBlocks.map(block =>
-            block.id === updatedActivity.timeBlockId
-              ? {
-                  ...block,
-                  day: updatedActivity.preferredDays[0],
-                  startTime: `${updatedActivity.preferredTime.startHour.toString().padStart(2, '0')}:00`,
-                  endTime: `${updatedActivity.preferredTime.endHour.toString().padStart(2, '0')}:00`,
-                  title: updatedActivity.name,
-                  description: updatedActivity.description || '',
-                  activityType: updatedActivity.type,
-                  type: 'occupied'
-                }
-              : block
-          );
-        }
-      }
-      // Si la actividad no tenía bloque pero ahora debería tenerlo
-      else if (updatedActivity.preferredTime && updatedActivity.preferredDays?.[0]) {
-        const newBlock: TimeBlock = {
-          id: uuidv4(),
-          day: updatedActivity.preferredDays[0],
-          startTime: `${updatedActivity.preferredTime.startHour.toString().padStart(2, '0')}:00`,
-          endTime: `${updatedActivity.preferredTime.endHour.toString().padStart(2, '0')}:00`,
-          type: 'occupied',
-          title: updatedActivity.name,
-          description: updatedActivity.description || '',
-          activityType: updatedActivity.type
-        };
-        
-        updatedActivity.timeBlockId = newBlock.id;
-        updatedTimeBlocks = [...state.timeBlocks, newBlock];
-      }
-      
       return {
         ...state,
         activities: state.activities.map(activity =>
-          activity.id === updatedActivity.id ? updatedActivity : activity
-        ),
-        timeBlocks: updatedTimeBlocks
+          activity.id === action.payload.id ? action.payload : activity
+        )
       };
     }
     

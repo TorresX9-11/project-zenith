@@ -1,15 +1,7 @@
 import React from 'react';
 import { useZenith } from '../context/ZenithContext';
 import { ActivityType } from '../types';
-import { BarChart3, Lightbulb, Clock, Brain, TrendingUp, BookOpen, Users, Coffee, Dumbbell, Calendar } from 'lucide-react';
-import TimeTable from '../components/TimeTable';
-
-interface StudyTechnique {
-  name: string;
-  icon: React.ReactNode;
-  description: string;
-  active: boolean;
-}
+import { BarChart3, Lightbulb, Clock, Brain, TrendingUp, BookOpen, Timer, Users, Coffee, Dumbbell } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const { 
@@ -22,36 +14,42 @@ const Dashboard: React.FC = () => {
   
   const hasSchedule = state.timeBlocks.length > 0;
   const hasActivities = state.activities.length > 0;
-
+  
   const studyHours = getActivityDuration('study');
-  const academicHours = getActivityDuration('academic'); 
+  const academicHours = getActivityDuration('academic');
   const exerciseHours = getActivityDuration('exercise');
   const socialHours = getActivityDuration('social');
   const restHours = getActivityDuration('rest');
   const productivity = calculateProductivity();
-
-  const studyTechniques: StudyTechnique[] = [
+  
+  const studyTechniques = [
     {
       name: 'Técnica Pomodoro',
-      icon: <Brain size={20} />,
-      description: '25 minutos de estudio, 5 de descanso',
-      active: true
+      icon: <Timer size={20} />,
+      description: '25 minutos de estudio, 5 minutos de descanso.',
+      active: state.settings.studyTechniques.pomodoro
     },
     {
-      name: 'Método Cornell',
+      name: 'Técnica Feynman',
+      icon: <Brain size={20} />,
+      description: 'Explica los conceptos como si le enseñaras a alguien más.',
+      active: state.settings.studyTechniques.feynman
+    },
+    {
+      name: 'Repetición Espaciada',
+      icon: <TrendingUp size={20} />,
+      description: 'Revisa el material en intervalos crecientes de tiempo.',
+      active: state.settings.studyTechniques.spaced
+    },
+    {
+      name: 'Mapas Conceptuales',
       icon: <BookOpen size={20} />,
-      description: 'Sistema de toma de notas estructurado',
-      active: false
-    },
-    {
-      name: 'Mapas Mentales',
-      icon: <Brain size={20} />,
-      description: 'Organización visual de conceptos',
-      active: false
+      description: 'Organiza visualmente los conceptos y sus relaciones.',
+      active: state.settings.studyTechniques.conceptMapping
     }
   ];
-
-  const getRecommendations = (): string[] => {
+  
+  const getRecommendations = () => {
     if (!hasSchedule) {
       return [
         'Configura tu horario para obtener recomendaciones personalizadas.',
@@ -62,6 +60,7 @@ const Dashboard: React.FC = () => {
     const recommendations = [];
     
     const freeTime = getTotalFreeTime();
+    const occupiedTime = getTotalOccupiedTime();
     
     if (freeTime < 10) {
       recommendations.push('Tu agenda está muy ocupada. Considera reducir algunas actividades para evitar el agotamiento.');
@@ -89,52 +88,18 @@ const Dashboard: React.FC = () => {
     
     return recommendations;
   };
-
+  
   const recommendations = getRecommendations();
-
+  
   const chartData = [
-    { 
-      type: 'Académico' as ActivityType, 
-      hours: academicHours,
-      color: 'bg-primary-600' 
-    },
-    { 
-      type: 'Trabajo' as ActivityType, 
-      hours: getActivityDuration('work'),
-      color: 'bg-purple-600' 
-    },
-    { 
-      type: 'Estudio' as ActivityType, 
-      hours: studyHours,
-      color: 'bg-secondary-600' 
-    },
-    { 
-      type: 'Ejercicio' as ActivityType, 
-      hours: exerciseHours,
-      color: 'bg-green-600' 
-    },
-    { 
-      type: 'Social' as ActivityType, 
-      hours: socialHours,
-      color: 'bg-yellow-600' 
-    },
-    { 
-      type: 'Descanso' as ActivityType, 
-      hours: restHours,
-      color: 'bg-accent-600' 
-    },
-    { 
-      type: 'Personal' as ActivityType, 
-      hours: getActivityDuration('personal'),
-      color: 'bg-neutral-600' 
-    },
-    { 
-      type: 'Libre' as ActivityType, 
-      hours: getTotalFreeTime(),
-      color: 'bg-red-600' 
-    }
-  ];  const totalOccupiedHours = getTotalOccupiedTime();
-  const totalHours = totalOccupiedHours + getTotalFreeTime();
+    { type: 'Académico' as ActivityType, hours: academicHours, color: 'bg-primary-600' },
+    { type: 'Estudio' as ActivityType, hours: studyHours, color: 'bg-secondary-600' },
+    { type: 'Ejercicio' as ActivityType, hours: exerciseHours, color: 'bg-success-600' },
+    { type: 'Social' as ActivityType, hours: socialHours, color: 'bg-warning-600' },
+    { type: 'Descanso' as ActivityType, hours: restHours, color: 'bg-accent-600' }
+  ].filter(item => item.hours > 0);
+  
+  const maxHours = Math.max(...chartData.map(d => d.hours), 10); // Minimum scale of 10 hours
   
   return (
     <div className="fade-in">
@@ -158,70 +123,6 @@ const Dashboard: React.FC = () => {
         </div>
       ) : (
         <>
-          {/* Sección de horario */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Calendar size={20} className="text-primary-600" />
-                <span>Mi Horario Semanal</span>
-              </h2>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Clock size={16} className="text-neutral-500" />
-                  <span className="text-sm text-neutral-600">
-                    {getTotalOccupiedTime().toFixed(1)}h ocupadas
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock size={16} className="text-success-500" />
-                  <span className="text-sm text-success-600">
-                    {getTotalFreeTime().toFixed(1)}h libres
-                  </span>
-                </div>
-              </div>
-            </div>              <div className="mb-4">                  
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-2">
-                  <div className="p-2 bg-primary-100 text-primary-800 rounded-lg flex items-center gap-2">
-                    <div className="w-4 h-4 bg-primary-600 rounded-full border-2 border-primary-200" />
-                    <span className="text-xs">Académico</span>
-                  </div>
-                  <div className="p-2 bg-purple-100 text-purple-800 rounded-lg flex items-center gap-2">
-                    <div className="w-4 h-4 bg-purple-600 rounded-full border-2 border-purple-200" />
-                    <span className="text-xs">Trabajo</span>
-                  </div>
-                  <div className="p-2 bg-secondary-100 text-secondary-800 rounded-lg flex items-center gap-2">
-                    <div className="w-4 h-4 bg-secondary-600 rounded-full border-2 border-secondary-200" />
-                    <span className="text-xs">Estudio</span>
-                  </div>
-                  <div className="p-2 bg-green-100 text-green-800 rounded-lg flex items-center gap-2">
-                    <div className="w-4 h-4 bg-green-600 rounded-full border-2 border-green-200" />
-                    <span className="text-xs">Ejercicio</span>
-                  </div>
-                  <div className="p-2 bg-yellow-100 text-yellow-800 rounded-lg flex items-center gap-2">
-                    <div className="w-4 h-4 bg-yellow-600 rounded-full border-2 border-yellow-200" />                    <span className="text-xs">Social</span>
-                  </div>
-                  <div className="p-2 bg-accent-100 text-accent-800 rounded-lg flex items-center gap-2">
-                    <div className="w-4 h-4 bg-accent-600 rounded-full border-2 border-accent-200" />
-                    <span className="text-xs">Descanso</span>
-                  </div>
-                  <div className="p-2 bg-neutral-100 text-neutral-800 rounded-lg flex items-center gap-2">
-                    <div className="w-4 h-4 bg-neutral-600 rounded-full border-2 border-neutral-200" />
-                    <span className="text-xs">Personal</span>
-                  </div>
-                  <div className="p-2 bg-red-100 text-red-800 rounded-lg flex items-center gap-2">
-                    <div className="w-4 h-4 bg-red-600 rounded-full border-2 border-red-200" />
-                    <span className="text-xs">Libre</span>
-                  </div>
-                </div>
-              </div>
-              <TimeTable 
-              timeBlocks={state.timeBlocks}
-              startHour={5}
-              endHour={22}
-            />
-          </div>
-
-          {/* Estadísticas y gráficos existentes */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             <div className="col-span-2">
               <div className="bg-white rounded-lg shadow-md p-6 h-full">
@@ -230,16 +131,14 @@ const Dashboard: React.FC = () => {
                 <div className="space-y-4">
                   {chartData.map(item => (
                     <div key={item.type} className="flex items-center">
-                      <span className="w-20 text-sm text-neutral-600">{item.type}</span>                      <div className="flex-1 h-6 bg-neutral-100 rounded-full overflow-hidden ml-2">
+                      <span className="w-20 text-sm text-neutral-600">{item.type}</span>
+                      <div className="flex-1 h-6 bg-neutral-100 rounded-full overflow-hidden ml-2">
                         <div 
-                          className={`h-full ${item.color} transition-all duration-1000 ease-out flex items-center justify-between px-2`}
-                          style={{ width: `${Math.max(5, (item.hours / totalOccupiedHours) * 100)}%` }}
+                          className={`h-full ${item.color} transition-all duration-1000 ease-out flex items-center pl-2`}
+                          style={{ width: `${Math.max(5, (item.hours / maxHours) * 100)}%` }}
                         >
                           <span className="text-white text-xs font-medium">
-                            {item.hours.toFixed(1)}h
-                          </span>
-                          <span className="text-white text-xs font-medium">
-                            {Math.round((item.hours / totalOccupiedHours) * 100)}%
+                            {item.hours} h
                           </span>
                         </div>
                       </div>
@@ -340,32 +239,36 @@ const Dashboard: React.FC = () => {
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 className="text-lg font-semibold mb-4">Balance de Actividades</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">              <BalanceCard 
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <BalanceCard 
                 icon={<BookOpen size={20} className="text-primary-600" />}
                 title="Académico"
                 hours={academicHours + studyHours}
-                percentage={Math.round(((academicHours + studyHours) / getTotalOccupiedTime()) * 100) || 0}
+                percentage={Math.round(((academicHours + studyHours) / (academicHours + studyHours + exerciseHours + socialHours + restHours)) * 100) || 0}
                 color="from-primary-500 to-primary-600"
               />
-                <BalanceCard 
+              
+              <BalanceCard 
                 icon={<Dumbbell size={20} className="text-success-600" />}
                 title="Ejercicio"
                 hours={exerciseHours}
-                percentage={Math.round((exerciseHours / getTotalOccupiedTime()) * 100) || 0}
+                percentage={Math.round((exerciseHours / (academicHours + studyHours + exerciseHours + socialHours + restHours)) * 100) || 0}
                 color="from-success-500 to-success-600"
               />
-                <BalanceCard 
+              
+              <BalanceCard 
                 icon={<Users size={20} className="text-warning-600" />}
                 title="Social"
                 hours={socialHours}
-                percentage={Math.round((socialHours / getTotalOccupiedTime()) * 100) || 0}
+                percentage={Math.round((socialHours / (academicHours + studyHours + exerciseHours + socialHours + restHours)) * 100) || 0}
                 color="from-warning-500 to-warning-600"
               />
-                <BalanceCard 
+              
+              <BalanceCard 
                 icon={<Coffee size={20} className="text-accent-600" />}
                 title="Descanso"
                 hours={restHours}
-                percentage={Math.round((restHours / getTotalOccupiedTime()) * 100) || 0}
+                percentage={Math.round((restHours / (academicHours + studyHours + exerciseHours + socialHours + restHours)) * 100) || 0}
                 color="from-accent-500 to-accent-600"
               />
             </div>

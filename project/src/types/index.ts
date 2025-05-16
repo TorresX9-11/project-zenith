@@ -1,7 +1,7 @@
 // Time block related types
 export type DayOfWeek = 'lunes' | 'martes' | 'miércoles' | 'jueves' | 'viernes' | 'sábado' | 'domingo';
 export type BlockType = 'occupied' | 'free';
-export type ActivityType = 'academic' | 'work' | 'study' | 'exercise' | 'rest' | 'social' | 'personal' | 'libre';
+export type ActivityType = 'academic' | 'study' | 'exercise' | 'rest' | 'social' | 'personal' | 'other';
 
 export interface TimeBlock {
   id: string;
@@ -12,7 +12,6 @@ export interface TimeBlock {
   title: string;
   description?: string;
   location?: string;
-  activityType?: ActivityType; // Tipo de actividad asociada
   color?: string;
 }
 
@@ -23,17 +22,11 @@ export interface Activity {
   duration: number; // in hours
   priority: 'high' | 'medium' | 'low';
   description?: string;
-  preferredTime: {
+  preferredTime?: {
     startHour: number;
     endHour: number;
   };
   preferredDays?: DayOfWeek[];
-  timeSlot?: {
-    day: DayOfWeek;
-    startTime: string;
-    endTime: string;
-  };
-  timeBlockId?: string; // ID del bloque de tiempo asociado, si existe
 }
 
 export interface StudyTechniques {

@@ -1,15 +1,13 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useZenith } from '../context/ZenithContext';
 import { DayOfWeek, TimeBlock } from '../types';
 import { Calendar, Clock, Plus, Info, Edit, Trash2, Save, X } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
-import TimeTable from '../components/TimeTable';
 
 const Schedule: React.FC = () => {
   const { state, addTimeBlock, removeTimeBlock, updateTimeBlock } = useZenith();
   const [showForm, setShowForm] = useState(false);
   const [editingBlock, setEditingBlock] = useState<TimeBlock | null>(null);
-  const formRef = useRef<HTMLDivElement>(null);
   const [newBlock, setNewBlock] = useState<Partial<TimeBlock>>({
     title: '',
     day: 'lunes',
@@ -18,7 +16,6 @@ const Schedule: React.FC = () => {
     type: 'occupied',
     description: '',
     location: '',
-    activityType: 'academic'
   });
 
   const days: DayOfWeek[] = [
@@ -34,18 +31,6 @@ const Schedule: React.FC = () => {
     'sábado': 'Sábado',
     'domingo': 'Domingo',
   };
-
-  // Tipos de actividades principales para el horario
-  const activityTypes = [
-    { value: 'academic', label: 'Académica', isMain: true },
-    { value: 'work', label: 'Trabajo', isMain: true },
-    { value: 'study', label: 'Estudio' },
-    { value: 'exercise', label: 'Ejercicio' },
-    { value: 'rest', label: 'Descanso' },
-    { value: 'social', label: 'Social' },
-    { value: 'personal', label: 'Personal' },
-    { value: 'libre', label: 'Libre' }
-  ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -83,7 +68,6 @@ const Schedule: React.FC = () => {
           type: 'occupied',
           description: '',
           location: '',
-          activityType: 'study'
         });
       }
     }
@@ -91,35 +75,32 @@ const Schedule: React.FC = () => {
     setShowForm(false);
   };
 
-  const handleShowForm = () => {
-    setShowForm(true);
-    // Esperar a que el formulario se renderice
-    setTimeout(() => {
-      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
-  };
-
-  const handleTimeSlotClick = (day: DayOfWeek, hour: number) => {
-    if (!showForm) {
-      setNewBlock({
-        ...newBlock,
-        day,
-        startTime: `${hour.toString().padStart(2, '0')}:00`,
-        endTime: `${(hour + 1).toString().padStart(2, '0')}:00`,
-        activityType: 'academic' // Tipo por defecto para nuevos bloques
-      });
-      handleShowForm();
-    }
-  };
-
   const handleEdit = (block: TimeBlock) => {
     setEditingBlock(block);
-    handleShowForm();
+    setShowForm(true);
   };
 
   const handleCancel = () => {
     setShowForm(false);
     setEditingBlock(null);
+  };
+
+  const getTimeBlocksByDay = (day: DayOfWeek) => {
+    return state.timeBlocks
+      .filter(block => block.day === day)
+      .sort((a, b) => {
+        const aTime = a.startTime.split(':').map(Number);
+        const bTime = b.startTime.split(':').map(Number);
+        
+        if (aTime[0] !== bTime[0]) {
+          return aTime[0] - bTime[0];
+        }
+        return aTime[1] - bTime[1];
+      });
+  };
+
+  const getBlockColor = (type: string) => {
+    return type === 'occupied' ? 'bg-primary-100 border-primary-300 text-primary-800' : 'bg-secondary-100 border-secondary-300 text-secondary-800';
   };
 
   return (
@@ -134,7 +115,7 @@ const Schedule: React.FC = () => {
         </div>
         
         <button 
-          onClick={handleShowForm}
+          onClick={() => setShowForm(true)}
           className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors flex items-center gap-2"
         >
           <Plus size={18} />
@@ -143,7 +124,7 @@ const Schedule: React.FC = () => {
       </div>
       
       {(showForm || editingBlock) && (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6 slide-up" ref={formRef}>
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6 slide-up">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">
               {editingBlock ? 'Editar Bloque' : 'Agregar Nuevo Bloque'}
@@ -240,38 +221,6 @@ const Schedule: React.FC = () => {
               </div>
               
               <div>
-                <label htmlFor="activityType" className="block text-sm font-medium text-neutral-700 mb-1">
-                  Tipo de Actividad
-                </label>
-                <select
-                  id="activityType"
-                  name="activityType"
-                  value={editingBlock?.activityType || newBlock.activityType || 'academic'}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 mb-1"
-                  required
-                >
-                  <optgroup label="Actividades Principales">
-                    {activityTypes
-                      .filter(type => type.isMain)
-                      .map(type => (
-                        <option key={type.value} value={type.value}>{type.label}</option>
-                      ))}
-                  </optgroup>
-                  <optgroup label="Otras Actividades">
-                    {activityTypes
-                      .filter(type => !type.isMain)
-                      .map(type => (
-                        <option key={type.value} value={type.value}>{type.label}</option>
-                      ))}
-                  </optgroup>
-                </select>
-                <p className="text-xs text-neutral-500 mt-1">
-                  Para una mejor organización, primero agrega tus actividades académicas o laborales fijas.
-                </p>
-              </div>
-              
-              <div>
                 <label htmlFor="location" className="block text-sm font-medium text-neutral-700 mb-1">
                   Ubicación (opcional)
                 </label>
@@ -340,19 +289,61 @@ const Schedule: React.FC = () => {
           </button>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <TimeTable 
-            timeBlocks={state.timeBlocks}
-            startHour={5}
-            endHour={22}
-            onSlotClick={handleTimeSlotClick}
-            onEditBlock={handleEdit}
-            onDeleteBlock={(block) => {
-              if (window.confirm('¿Estás seguro de que deseas eliminar este bloque?')) {
-                removeTimeBlock(block.id);
-              }
-            }}
-          />
+        <div className="grid grid-cols-7 gap-4">
+          {days.map(day => (
+            <div key={day} className="bg-white rounded-lg shadow-sm overflow-hidden">
+              <div className="bg-neutral-100 p-3 text-center font-medium">
+                {dayTranslations[day]}
+              </div>
+              
+              <div className="p-3 min-h-[300px]">
+                {getTimeBlocksByDay(day).length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-neutral-400 text-sm text-center p-4">
+                    <Clock size={20} className="mb-2" />
+                    <p>Sin actividades</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {getTimeBlocksByDay(day).map(block => (
+                      <div 
+                        key={block.id} 
+                        className={`p-2 border rounded-md ${getBlockColor(block.type)}`}
+                      >
+                        <div className="font-medium text-sm">{block.title}</div>
+                        <div className="text-xs flex items-center gap-1 mt-1">
+                          <Clock size={12} />
+                          <span>{block.startTime} - {block.endTime}</span>
+                        </div>
+                        
+                        {block.location && (
+                          <div className="text-xs mt-1 italic">
+                            {block.location}
+                          </div>
+                        )}
+                        
+                        <div className="flex mt-2 gap-1 justify-end">
+                          <button 
+                            onClick={() => handleEdit(block)}
+                            className="p-1 text-neutral-500 hover:text-primary-600"
+                            title="Editar"
+                          >
+                            <Edit size={14} />
+                          </button>
+                          <button 
+                            onClick={() => removeTimeBlock(block.id)}
+                            className="p-1 text-neutral-500 hover:text-error-600"
+                            title="Eliminar"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       )}
       

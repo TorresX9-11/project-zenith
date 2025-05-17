@@ -31,10 +31,12 @@ export const scheduleReducer = (state: ScheduleState, action: ScheduleAction): S
     }
     
     case 'REMOVE_TIME_BLOCK': {
-      // Al eliminar un bloque, actualizar las actividades asociadas
+      // Primero, obtener cualquier actividad que esté vinculada a este bloque
       const updatedActivities = state.activities.map(activity => {
         if (activity.timeBlockId === action.payload) {
-          return { ...activity, timeBlockId: undefined };
+          // Desvincular la actividad del bloque eliminado
+          const { timeBlockId, ...rest } = activity;
+          return rest;
         }
         return activity;
       });

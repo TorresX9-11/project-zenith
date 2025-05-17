@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useZenith } from '../context/ZenithContext';
 import { ActivityType, Activity, DayOfWeek } from '../types';
 import { ListTodo, Plus, Edit, Trash2, Clock, BarChart3, Calendar } from 'lucide-react';
@@ -11,6 +11,10 @@ const Activities: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [selectedTime, setSelectedTime] = useState<{ day: DayOfWeek; hour: number } | null>(null);
+  const formRef = useRef<HTMLDivElement>(null);
+  const activityGroupsRef = useRef<HTMLDivElement>(null);
+  const lastAddedActivityRef = useRef<string | null>(null);
+
   const [newActivity, setNewActivity] = useState<Partial<Activity>>({
     name: '',
     type: 'study',
@@ -96,6 +100,14 @@ const Activities: React.FC = () => {
     }
   };
 
+  const handleShowForm = () => {
+    setShowForm(true);
+    // Esperar a que el formulario se renderice
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
   const handleTimeSlotClick = (day: DayOfWeek, hour: number) => {
     setSelectedTime({ day, hour });
     if (!showForm) {
@@ -107,7 +119,7 @@ const Activities: React.FC = () => {
           endHour: hour + 1
         }
       }));
-      setShowForm(true);
+      handleShowForm();
     }
   };
 
@@ -143,10 +155,14 @@ const Activities: React.FC = () => {
       } as Activity);
       setEditingActivity(null);
     } else {
+      const newActivityId = uuidv4();
       addActivity({
         ...newActivity,
-        id: uuidv4()
+        id: newActivityId
       } as Activity);
+      
+      // Guardar el ID de la última actividad agregada
+      lastAddedActivityRef.current = newActivityId;
       
       setNewActivity({
         name: '',
@@ -160,6 +176,16 @@ const Activities: React.FC = () => {
           endHour: 9
         }
       });
+
+      // Esperar a que la actividad se renderice y hacer scroll
+      setTimeout(() => {
+        const activityElement = document.getElementById(`activity-${newActivityId}`);
+        if (activityElement) {
+          activityElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (activityGroupsRef.current) {
+          activityGroupsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
     }
     
     setShowForm(false);
@@ -233,7 +259,7 @@ const Activities: React.FC = () => {
         </div>
         
         <button 
-          onClick={() => setShowForm(true)}
+          onClick={handleShowForm}
           className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors flex items-center gap-2"
         >
           <Plus size={18} />
@@ -256,17 +282,19 @@ const Activities: React.FC = () => {
       </div>
       
       {(showForm || editingActivity) && (
-        <ActivityForm 
-          editingActivity={editingActivity}
-          newActivity={newActivity}
-          activityTypes={activityTypes}
-          days={days}
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-          onChange={handleChange}
-          onDayChange={handleDayChange}
-          onTimeChange={handleTimeChange}
-        />
+        <div ref={formRef}>
+          <ActivityForm 
+            editingActivity={editingActivity}
+            newActivity={newActivity}
+            activityTypes={activityTypes}
+            days={days}
+            onSubmit={handleSubmit}
+            onCancel={handleCancel}
+            onChange={handleChange}
+            onDayChange={handleDayChange}
+            onTimeChange={handleTimeChange}
+          />
+        </div>
       )}
 
       {!hasActivities && !showForm ? (
@@ -288,7 +316,7 @@ const Activities: React.FC = () => {
         </div>
       ) : (
         hasActivities && (
-          <div className="space-y-8">
+          <div ref={activityGroupsRef} className="space-y-8">
             {activityGroups.map(group => (
               <div key={group.type} className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -303,8 +331,11 @@ const Activities: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {group.activities.map(activity => (
                     <div 
-                      key={activity.id} 
-                      className="border border-neutral-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
+                      key={activity.id}
+                      id={`activity-${activity.id}`}
+                      className={`border border-neutral-200 rounded-lg p-4 hover:shadow-sm transition-shadow ${
+                        lastAddedActivityRef.current === activity.id ? 'ring-2 ring-primary-500' : ''
+                      }`}
                     >
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="font-medium">{activity.name}</h3>

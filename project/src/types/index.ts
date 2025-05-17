@@ -12,6 +12,7 @@ export interface TimeBlock {
   title: string;
   description?: string;
   location?: string;
+  activityType?: ActivityType; // Tipo de actividad asociada
   color?: string;
 }
 
@@ -22,11 +23,17 @@ export interface Activity {
   duration: number; // in hours
   priority: 'high' | 'medium' | 'low';
   description?: string;
-  preferredTime?: {
+  preferredTime: {
     startHour: number;
     endHour: number;
   };
   preferredDays?: DayOfWeek[];
+  timeSlot?: {
+    day: DayOfWeek;
+    startTime: string;
+    endTime: string;
+  };
+  timeBlockId?: string; // ID del bloque de tiempo asociado, si existe
 }
 
 export interface StudyTechniques {

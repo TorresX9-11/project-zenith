@@ -101,14 +101,24 @@ const ActivityForm: React.FC<ActivityFormProps> = ({
               onChange={(e) => onTimeChange('end', e.target.value)}
               className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
-          </div>          <div className="text-sm text-neutral-600 flex items-center gap-2">
-            <Clock size={16} />
-            <span>Duración: {
-              (editingActivity?.preferredTime || newActivity.preferredTime) ? 
-              Math.round(((editingActivity?.preferredTime?.endHour || newActivity.preferredTime?.endHour || 9) - 
-              (editingActivity?.preferredTime?.startHour || newActivity.preferredTime?.startHour || 8)) * 10) / 10
-              : 0
-            } horas</span>
+          </div>
+
+          <div>
+            <label htmlFor="duration" className="block text-sm font-medium text-neutral-700 mb-2">
+              Duración (horas)
+            </label>
+            <input
+              type="number"
+              id="duration"
+              name="duration"
+              min="0.5"
+              max="24"
+              step="0.5"
+              value={editingActivity ? editingActivity.duration : newActivity.duration}
+              onChange={onChange}
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              required
+            />
           </div>
         </div>
 

@@ -3,6 +3,7 @@ import { useZenith } from '../context/ZenithContext';
 import { DayOfWeek, TimeBlock } from '../types';
 import { Calendar, Clock, Plus, Info, Edit, Trash2, Save, X } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
+import TimeTable from '../components/TimeTable';
 
 const Schedule: React.FC = () => {
   const { state, addTimeBlock, removeTimeBlock, updateTimeBlock } = useZenith();
@@ -85,22 +86,16 @@ const Schedule: React.FC = () => {
     setEditingBlock(null);
   };
 
-  const getTimeBlocksByDay = (day: DayOfWeek) => {
-    return state.timeBlocks
-      .filter(block => block.day === day)
-      .sort((a, b) => {
-        const aTime = a.startTime.split(':').map(Number);
-        const bTime = b.startTime.split(':').map(Number);
-        
-        if (aTime[0] !== bTime[0]) {
-          return aTime[0] - bTime[0];
-        }
-        return aTime[1] - bTime[1];
+  const handleTimeSlotClick = (day: DayOfWeek, hour: number) => {
+    if (!showForm) {
+      setNewBlock({
+        ...newBlock,
+        day,
+        startTime: `${hour.toString().padStart(2, '0')}:00`,
+        endTime: `${(hour + 1).toString().padStart(2, '0')}:00`,
       });
-  };
-
-  const getBlockColor = (type: string) => {
-    return type === 'occupied' ? 'bg-primary-100 border-primary-300 text-primary-800' : 'bg-secondary-100 border-secondary-300 text-secondary-800';
+      setShowForm(true);
+    }
   };
 
   return (
@@ -289,61 +284,14 @@ const Schedule: React.FC = () => {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-7 gap-4">
-          {days.map(day => (
-            <div key={day} className="bg-white rounded-lg shadow-sm overflow-hidden">
-              <div className="bg-neutral-100 p-3 text-center font-medium">
-                {dayTranslations[day]}
-              </div>
-              
-              <div className="p-3 min-h-[300px]">
-                {getTimeBlocksByDay(day).length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-neutral-400 text-sm text-center p-4">
-                    <Clock size={20} className="mb-2" />
-                    <p>Sin actividades</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {getTimeBlocksByDay(day).map(block => (
-                      <div 
-                        key={block.id} 
-                        className={`p-2 border rounded-md ${getBlockColor(block.type)}`}
-                      >
-                        <div className="font-medium text-sm">{block.title}</div>
-                        <div className="text-xs flex items-center gap-1 mt-1">
-                          <Clock size={12} />
-                          <span>{block.startTime} - {block.endTime}</span>
-                        </div>
-                        
-                        {block.location && (
-                          <div className="text-xs mt-1 italic">
-                            {block.location}
-                          </div>
-                        )}
-                        
-                        <div className="flex mt-2 gap-1 justify-end">
-                          <button 
-                            onClick={() => handleEdit(block)}
-                            className="p-1 text-neutral-500 hover:text-primary-600"
-                            title="Editar"
-                          >
-                            <Edit size={14} />
-                          </button>
-                          <button 
-                            onClick={() => removeTimeBlock(block.id)}
-                            className="p-1 text-neutral-500 hover:text-error-600"
-                            title="Eliminar"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <TimeTable 
+            timeBlocks={state.timeBlocks}
+            showFreeSlots={false}
+            startHour={5}
+            endHour={22}
+            onSlotClick={handleTimeSlotClick}
+          />
         </div>
       )}
       

@@ -1,7 +1,8 @@
 import React from 'react';
 import { useZenith } from '../context/ZenithContext';
 import { ActivityType } from '../types';
-import { BarChart3, Lightbulb, Clock, Brain, TrendingUp, BookOpen, Timer, Users, Coffee, Dumbbell } from 'lucide-react';
+import { BarChart3, Lightbulb, Clock, Brain, TrendingUp, BookOpen, Timer, Users, Coffee, Dumbbell, Calendar } from 'lucide-react';
+import TimeTable from '../components/TimeTable';
 
 const Dashboard: React.FC = () => {
   const { 
@@ -123,6 +124,67 @@ const Dashboard: React.FC = () => {
         </div>
       ) : (
         <>
+          {/* Sección de horario */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Calendar size={20} className="text-primary-600" />
+                <span>Mi Horario Semanal</span>
+              </h2>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Clock size={16} className="text-neutral-500" />
+                  <span className="text-sm text-neutral-600">
+                    {getTotalOccupiedTime().toFixed(1)}h ocupadas
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock size={16} className="text-success-500" />
+                  <span className="text-sm text-success-600">
+                    {getTotalFreeTime().toFixed(1)}h libres
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mb-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+                <div className="p-2 bg-primary-50 text-primary-800 rounded-lg flex items-center gap-2">
+                  <div className="w-3 h-3 bg-primary-100 rounded" />
+                  <span className="text-xs">Académico</span>
+                </div>
+                <div className="p-2 bg-secondary-50 text-secondary-800 rounded-lg flex items-center gap-2">
+                  <div className="w-3 h-3 bg-secondary-100 rounded" />
+                  <span className="text-xs">Estudio</span>
+                </div>
+                <div className="p-2 bg-success-50 text-success-800 rounded-lg flex items-center gap-2">
+                  <div className="w-3 h-3 bg-success-100 rounded" />
+                  <span className="text-xs">Ejercicio</span>
+                </div>
+                <div className="p-2 bg-warning-50 text-warning-800 rounded-lg flex items-center gap-2">
+                  <div className="w-3 h-3 bg-warning-100 rounded" />
+                  <span className="text-xs">Social</span>
+                </div>
+                <div className="p-2 bg-accent-50 text-accent-800 rounded-lg flex items-center gap-2">
+                  <div className="w-3 h-3 bg-accent-100 rounded" />
+                  <span className="text-xs">Descanso</span>
+                </div>
+                <div className="p-2 bg-emerald-50 text-emerald-800 rounded-lg flex items-center gap-2">
+                  <div className="w-3 h-3 bg-emerald-100 rounded" />
+                  <span className="text-xs">Libre</span>
+                </div>
+              </div>
+            </div>
+            
+            <TimeTable 
+              timeBlocks={state.timeBlocks}
+              showFreeSlots={true}
+              startHour={5}
+              endHour={22}
+            />
+          </div>
+
+          {/* Estadísticas y gráficos existentes */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             <div className="col-span-2">
               <div className="bg-white rounded-lg shadow-md p-6 h-full">

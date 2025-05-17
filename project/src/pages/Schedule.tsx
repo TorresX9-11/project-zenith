@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useZenith } from '../context/ZenithContext';
 import { DayOfWeek, TimeBlock } from '../types';
 import { Calendar, Clock, Plus, Info, Edit, Trash2, Save, X } from 'lucide-react';
@@ -9,6 +9,7 @@ const Schedule: React.FC = () => {
   const { state, addTimeBlock, removeTimeBlock, updateTimeBlock } = useZenith();
   const [showForm, setShowForm] = useState(false);
   const [editingBlock, setEditingBlock] = useState<TimeBlock | null>(null);
+  const formRef = useRef<HTMLDivElement>(null);
   const [newBlock, setNewBlock] = useState<Partial<TimeBlock>>({
     title: '',
     day: 'lunes',
@@ -90,14 +91,12 @@ const Schedule: React.FC = () => {
     setShowForm(false);
   };
 
-  const handleEdit = (block: TimeBlock) => {
-    setEditingBlock(block);
+  const handleShowForm = () => {
     setShowForm(true);
-  };
-
-  const handleCancel = () => {
-    setShowForm(false);
-    setEditingBlock(null);
+    // Esperar a que el formulario se renderice
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   };
 
   const handleTimeSlotClick = (day: DayOfWeek, hour: number) => {
@@ -109,8 +108,18 @@ const Schedule: React.FC = () => {
         endTime: `${(hour + 1).toString().padStart(2, '0')}:00`,
         activityType: 'academic' // Tipo por defecto para nuevos bloques
       });
-      setShowForm(true);
+      handleShowForm();
     }
+  };
+
+  const handleEdit = (block: TimeBlock) => {
+    setEditingBlock(block);
+    handleShowForm();
+  };
+
+  const handleCancel = () => {
+    setShowForm(false);
+    setEditingBlock(null);
   };
 
   return (
@@ -125,7 +134,7 @@ const Schedule: React.FC = () => {
         </div>
         
         <button 
-          onClick={() => setShowForm(true)}
+          onClick={handleShowForm}
           className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors flex items-center gap-2"
         >
           <Plus size={18} />
@@ -134,7 +143,7 @@ const Schedule: React.FC = () => {
       </div>
       
       {(showForm || editingBlock) && (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6 slide-up">
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6 slide-up" ref={formRef}>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">
               {editingBlock ? 'Editar Bloque' : 'Agregar Nuevo Bloque'}

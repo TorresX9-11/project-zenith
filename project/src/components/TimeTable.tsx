@@ -4,16 +4,13 @@ import { Clock } from 'lucide-react';
 
 interface TimeTableProps {
   timeBlocks: TimeBlock[];
-  showFreeSlots?: boolean;
   startHour?: number;
   endHour?: number;
   onSlotClick?: (day: DayOfWeek, hour: number) => void;
 }
 
 const TimeTable: React.FC<TimeTableProps> = ({
-  timeBlocks,
-  showFreeSlots = true,
-  startHour = 5,
+  timeBlocks,  startHour = 5,
   endHour = 22,
   onSlotClick
 }) => {
@@ -42,17 +39,26 @@ const TimeTable: React.FC<TimeTableProps> = ({
     return `${displayHour}:00 ${period}`;
   };
 
-  const getActivityColor = (type: string): string => {
-    const colors: Record<string, string> = {
-      academic: 'bg-primary-100 border-primary-300 text-primary-800',
-      study: 'bg-secondary-100 border-secondary-300 text-secondary-800',
-      exercise: 'bg-success-100 border-success-300 text-success-800',
-      rest: 'bg-accent-100 border-accent-300 text-accent-800',
-      social: 'bg-warning-100 border-warning-300 text-warning-800',
+  const getActivityColor = (type: string, activityType?: ActivityType): string => {
+    if (activityType) {
+      const colors: Record<ActivityType, string> = {
+        academic: 'bg-primary-100 border-primary-300 text-primary-800',
+        study: 'bg-secondary-100 border-secondary-300 text-secondary-800',
+        exercise: 'bg-success-100 border-success-300 text-success-800',
+        rest: 'bg-accent-100 border-accent-300 text-accent-800',
+        social: 'bg-warning-100 border-warning-300 text-warning-800',
+        personal: 'bg-neutral-100 border-neutral-300 text-neutral-800',
+        other: 'bg-error-100 border-error-300 text-error-800'
+      };
+      return colors[activityType];
+    }
+
+    // Fallback para bloques sin tipo de actividad
+    const blockColors: Record<string, string> = {
       free: 'bg-emerald-50 border-emerald-200 text-emerald-800',
       occupied: 'bg-neutral-100 border-neutral-300 text-neutral-800'
     };
-    return colors[type] || colors.occupied;
+    return blockColors[type] || blockColors.occupied;
   };
 
   const isSlotOccupied = (day: DayOfWeek, hour: number): TimeBlock | undefined => {
@@ -83,38 +89,45 @@ const TimeTable: React.FC<TimeTableProps> = ({
 
         {/* Horario */}
         <div className="space-y-1">
+          {/* Bloques de hora */}
           {hours.map(hour => (
-            <div key={hour} className="grid grid-cols-8 gap-1">
-              {/* Hora */}
-              <div className="h-16 flex items-center justify-center text-sm text-neutral-600">
+            <div key={hour} className="grid grid-cols-8 gap-1 h-16"> {/* Aumenté la altura para más contenido */}
+              {/* Columna de hora */}
+              <div className="flex items-center justify-center text-sm text-neutral-600">
                 {formatHour(hour)}
               </div>
-
-              {/* Celdas por día */}
+              
+              {/* Celdas para cada día */}
               {days.map(day => {
-                const block = isSlotOccupied(day, hour);
-                const isFree = !block && showFreeSlots;
-
+                const slot = isSlotOccupied(day, hour);
+                
                 return (
-                  <div
-                    key={`${day}-${hour}`}
-                    className={`h-16 border rounded-md transition-all cursor-pointer hover:opacity-80
-                      ${block ? getActivityColor(block.type) : 
-                        isFree ? 'bg-emerald-50 border-emerald-200' : 'bg-neutral-50 border-neutral-100'}`}
+                  <button
+                    key={day}
                     onClick={() => onSlotClick?.(day, hour)}
-                    title={block ? `${block.title}\n${block.startTime} - ${block.endTime}${block.location ? `\n${block.location}` : ''}` : 
-                      isFree ? 'Espacio disponible' : ''}
+                    className={`rounded-md border transition-colors relative overflow-hidden ${
+                      slot
+                        ? `${getActivityColor(slot.type, slot.activityType)} hover:opacity-90`
+                        : 'bg-white border-neutral-200 hover:bg-neutral-50'
+                    }`}
                   >
-                    {block && (
-                      <div className="p-2 h-full flex flex-col">
-                        <div className="font-medium text-sm truncate">{block.title}</div>
-                        <div className="text-xs mt-auto flex items-center gap-1">
-                          <Clock size={12} />
-                          <span>{block.startTime} - {block.endTime}</span>
+                    {slot && (
+                      <div className="absolute inset-0 p-2 flex flex-col justify-between h-full">
+                        <div>
+                          <div className="text-sm font-medium truncate">{slot.title}</div>
+                          {slot.location && (
+                            <div className="text-xs opacity-75 truncate flex items-center gap-1">
+                              <span className="inline-block w-2 h-2 rounded-full bg-current" />
+                              {slot.location}
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-xs opacity-75">
+                          {slot.startTime} - {slot.endTime}
                         </div>
                       </div>
                     )}
-                  </div>
+                  </button>
                 );
               })}
             </div>

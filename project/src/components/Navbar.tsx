@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Calendar, ListTodo, BarChart3 } from 'lucide-react';
+import { Home, Calendar, ListTodo, BarChart3, Info } from 'lucide-react';
 
 const Navbar: React.FC = () => {
   return (
@@ -11,6 +11,7 @@ const Navbar: React.FC = () => {
           <NavItem to="/horario" icon={<Calendar size={18} />} label="Horario" />
           <NavItem to="/actividades" icon={<ListTodo size={18} />} label="Actividades" />
           <NavItem to="/dashboard" icon={<BarChart3 size={18} />} label="Dashboard" />
+          <NavItem to="/sobre-nosotros" icon={<Info size={18} />} label="Sobre Nosotros" />
         </ul>
       </div>
     </nav>

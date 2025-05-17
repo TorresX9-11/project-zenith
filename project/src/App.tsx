@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Schedule from './pages/Schedule';
 import Activities from './pages/Activities';
 import Dashboard from './pages/Dashboard';
+import AboutUs from './pages/AboutUs';
 import { ZenithProvider } from './context/ZenithContext';
 import './App.css';
 
@@ -18,6 +19,7 @@ function App() {
             <Route path="horario" element={<Schedule />} />
             <Route path="actividades" element={<Activities />} />
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="sobre-nosotros" element={<AboutUs />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

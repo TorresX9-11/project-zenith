@@ -86,30 +86,22 @@ export const ZenithProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const getActivityDuration = (type: ActivityType): number => {
-    // Solo contar actividades que tienen un bloque de tiempo asociado y válido
     return state.activities
-      .filter(activity => {
-        // Si la actividad tiene un timeBlockId, verificar que el bloque existe
+      .filter(activity => activity.type === type)
+      .reduce((total, activity) => {
         if (activity.timeBlockId) {
           const block = state.timeBlocks.find(b => b.id === activity.timeBlockId);
-          return block && activity.type === type;
+          if (!block) return total + activity.duration;
+          
+          const [startHour, startMinute] = block.startTime.split(':').map(Number);
+          const [endHour, endMinute] = block.endTime.split(':').map(Number);
+          
+          const start = startHour + (startMinute / 60);
+          const end = endHour + (endMinute / 60);
+          
+          return end >= start ? total + (end - start) : total + activity.duration;
         }
-        return false;
-      })
-      .reduce((total, activity) => {
-        const block = state.timeBlocks.find(b => b.id === activity.timeBlockId);
-        if (!block) return total;
-        
-        // Calcular la duración real basada en el bloque de tiempo
-        const [startHour, startMinute] = block.startTime.split(':').map(Number);
-        const [endHour, endMinute] = block.endTime.split(':').map(Number);
-        
-        const start = startHour + (startMinute / 60);
-        const end = endHour + (endMinute / 60);
-        
-        if (end < start) return total;
-        
-        return total + (end - start);
+        return total + activity.duration;
       }, 0);
   };
 

@@ -58,11 +58,12 @@ export const ZenithProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Calculate metrics
   const calculateProductivity = (): number => {
-    // Solo contar bloques de tiempo ocupados con tipos de actividad productiva
+    // Contar bloques de tiempo ocupados con tipos de actividad productiva
+    // Incluye ejercicio y descanso ya que contribuyen al bienestar y rendimiento académico
     const productiveTime = state.timeBlocks.reduce((total, block) => {
       if (block.type === 'occupied' && 
           block.activityType && 
-          ['academic', 'work', 'study'].includes(block.activityType)) {
+          ['academic', 'work', 'study', 'exercise', 'rest'].includes(block.activityType)) {
         const [startHour, startMinute] = block.startTime.split(':').map(Number);
         const [endHour, endMinute] = block.endTime.split(':').map(Number);
         

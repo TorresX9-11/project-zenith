@@ -158,21 +158,18 @@ const Dashboard: React.FC = () => {
                   </div>
                   <div className="p-2 bg-secondary-100 text-secondary-800 rounded-lg flex items-center gap-2">
                     <div className="w-4 h-4 bg-secondary-600 rounded-full border-2 border-secondary-200" />
-                    <span className="text-xs">Estudio</span>
-                  </div>                  <div className="p-2 bg-success-100 text-success-800 rounded-lg flex items-center gap-2">
-                    <div className="w-4 h-4 bg-green-600 rounded-full border-2 border-success-200" />
+                    <span className="text-xs">Estudio</span>                  </div>                  <div className="p-2 bg-green-100 text-green-800 rounded-lg flex items-center gap-2">
+                    <div className="w-4 h-4 bg-green-600 rounded-full border-2 border-green-200" />
                     <span className="text-xs">Ejercicio</span>
                   </div>
-                  <div className="p-2 bg-warning-100 text-warning-800 rounded-lg flex items-center gap-2">
-                    <div className="w-4 h-4 bg-yellow-600 rounded-full border-2 border-warning-200" />
+                  <div className="p-2 bg-yellow-100 text-yellow-800 rounded-lg flex items-center gap-2">
+                    <div className="w-4 h-4 bg-yellow-600 rounded-full border-2 border-yellow-200" />
                     <span className="text-xs">Social</span>
                   </div>
                   <div className="p-2 bg-accent-100 text-accent-800 rounded-lg flex items-center gap-2">
                     <div className="w-4 h-4 bg-accent-600 rounded-full border-2 border-accent-200" />
-                    <span className="text-xs">Descanso</span>
-                  </div>
-                  <div className="p-2 bg-emerald-100 text-emerald-800 rounded-lg flex items-center gap-2">
-                    <div className="w-4 h-4 bg-emerald-600 rounded-full border-2 border-emerald-200" />
+                    <span className="text-xs">Descanso</span>                  </div>                  <div className="p-2 bg-red-100 text-red-800 rounded-lg flex items-center gap-2">
+                    <div className="w-4 h-4 bg-red-600 rounded-full border-2 border-red-200" />
                     <span className="text-xs">Libre</span>
                   </div>
               </div>

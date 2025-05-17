@@ -44,7 +44,7 @@ const Schedule: React.FC = () => {
     { value: 'rest', label: 'Descanso' },
     { value: 'social', label: 'Social' },
     { value: 'personal', label: 'Personal' },
-    { value: 'other', label: 'Otra' }
+    { value: 'libre', label: 'Libre' }
   ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {

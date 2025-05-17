@@ -17,7 +17,7 @@ const Schedule: React.FC = () => {
     type: 'occupied',
     description: '',
     location: '',
-    activityType: 'study'
+    activityType: 'academic'
   });
 
   const days: DayOfWeek[] = [
@@ -34,8 +34,10 @@ const Schedule: React.FC = () => {
     'domingo': 'Domingo',
   };
 
+  // Tipos de actividades principales para el horario
   const activityTypes = [
-    { value: 'academic', label: 'Académica' },
+    { value: 'academic', label: 'Académica', isMain: true },
+    { value: 'work', label: 'Trabajo', isMain: true },
     { value: 'study', label: 'Estudio' },
     { value: 'exercise', label: 'Ejercicio' },
     { value: 'rest', label: 'Descanso' },
@@ -105,7 +107,7 @@ const Schedule: React.FC = () => {
         day,
         startTime: `${hour.toString().padStart(2, '0')}:00`,
         endTime: `${(hour + 1).toString().padStart(2, '0')}:00`,
-        activityType: 'study' // Tipo por defecto para nuevos bloques
+        activityType: 'academic' // Tipo por defecto para nuevos bloques
       });
       setShowForm(true);
     }
@@ -235,15 +237,29 @@ const Schedule: React.FC = () => {
                 <select
                   id="activityType"
                   name="activityType"
-                  value={editingBlock?.activityType || newBlock.activityType || 'study'}
+                  value={editingBlock?.activityType || newBlock.activityType || 'academic'}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 mb-1"
                   required
                 >
-                  {activityTypes.map(type => (
-                    <option key={type.value} value={type.value}>{type.label}</option>
-                  ))}
+                  <optgroup label="Actividades Principales">
+                    {activityTypes
+                      .filter(type => type.isMain)
+                      .map(type => (
+                        <option key={type.value} value={type.value}>{type.label}</option>
+                      ))}
+                  </optgroup>
+                  <optgroup label="Otras Actividades">
+                    {activityTypes
+                      .filter(type => !type.isMain)
+                      .map(type => (
+                        <option key={type.value} value={type.value}>{type.label}</option>
+                      ))}
+                  </optgroup>
                 </select>
+                <p className="text-xs text-neutral-500 mt-1">
+                  Para una mejor organización, primero agrega tus actividades académicas o laborales fijas.
+                </p>
               </div>
               
               <div>

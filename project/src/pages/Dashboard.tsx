@@ -146,39 +146,39 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
             </div>
-            
-            <div className="mb-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
-                <div className="p-2 bg-primary-50 text-primary-800 rounded-lg flex items-center gap-2">
-                  <div className="w-3 h-3 bg-primary-100 rounded" />
-                  <span className="text-xs">Académico</span>
-                </div>
-                <div className="p-2 bg-secondary-50 text-secondary-800 rounded-lg flex items-center gap-2">
-                  <div className="w-3 h-3 bg-secondary-100 rounded" />
-                  <span className="text-xs">Estudio</span>
-                </div>
-                <div className="p-2 bg-success-50 text-success-800 rounded-lg flex items-center gap-2">
-                  <div className="w-3 h-3 bg-success-100 rounded" />
-                  <span className="text-xs">Ejercicio</span>
-                </div>
-                <div className="p-2 bg-warning-50 text-warning-800 rounded-lg flex items-center gap-2">
-                  <div className="w-3 h-3 bg-warning-100 rounded" />
-                  <span className="text-xs">Social</span>
-                </div>
-                <div className="p-2 bg-accent-50 text-accent-800 rounded-lg flex items-center gap-2">
-                  <div className="w-3 h-3 bg-accent-100 rounded" />
-                  <span className="text-xs">Descanso</span>
-                </div>
-                <div className="p-2 bg-emerald-50 text-emerald-800 rounded-lg flex items-center gap-2">
-                  <div className="w-3 h-3 bg-emerald-100 rounded" />
-                  <span className="text-xs">Libre</span>
-                </div>
+              <div className="mb-4">                  
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-2">
+                  <div className="p-2 bg-primary-100 text-primary-800 rounded-lg flex items-center gap-2">
+                    <div className="w-4 h-4 bg-primary-600 rounded-full border-2 border-primary-200" />
+                    <span className="text-xs">Académico</span>
+                  </div>
+                  <div className="p-2 bg-purple-100 text-purple-800 rounded-lg flex items-center gap-2">
+                    <div className="w-4 h-4 bg-purple-600 rounded-full border-2 border-purple-200" />
+                    <span className="text-xs">Trabajo</span>
+                  </div>
+                  <div className="p-2 bg-secondary-100 text-secondary-800 rounded-lg flex items-center gap-2">
+                    <div className="w-4 h-4 bg-secondary-600 rounded-full border-2 border-secondary-200" />
+                    <span className="text-xs">Estudio</span>
+                  </div>                  <div className="p-2 bg-success-100 text-success-800 rounded-lg flex items-center gap-2">
+                    <div className="w-4 h-4 bg-green-600 rounded-full border-2 border-success-200" />
+                    <span className="text-xs">Ejercicio</span>
+                  </div>
+                  <div className="p-2 bg-warning-100 text-warning-800 rounded-lg flex items-center gap-2">
+                    <div className="w-4 h-4 bg-yellow-600 rounded-full border-2 border-warning-200" />
+                    <span className="text-xs">Social</span>
+                  </div>
+                  <div className="p-2 bg-accent-100 text-accent-800 rounded-lg flex items-center gap-2">
+                    <div className="w-4 h-4 bg-accent-600 rounded-full border-2 border-accent-200" />
+                    <span className="text-xs">Descanso</span>
+                  </div>
+                  <div className="p-2 bg-emerald-100 text-emerald-800 rounded-lg flex items-center gap-2">
+                    <div className="w-4 h-4 bg-emerald-600 rounded-full border-2 border-emerald-200" />
+                    <span className="text-xs">Libre</span>
+                  </div>
               </div>
             </div>
-            
-            <TimeTable 
+              <TimeTable 
               timeBlocks={state.timeBlocks}
-              showFreeSlots={true}
               startHour={5}
               endHour={22}
             />

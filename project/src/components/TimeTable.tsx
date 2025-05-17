@@ -44,10 +44,10 @@ const TimeTable: React.FC<TimeTableProps> = ({
     return `${displayHour}:00 ${period}`;
   };
 
-  const getActivityColor = (type: string, activityType?: ActivityType): string => {
-    if (activityType) {
+  const getActivityColor = (type: string, activityType?: ActivityType): string => {    if (activityType) {
       const colors: Record<ActivityType, string> = {
         academic: 'bg-primary-100 border-primary-300 text-primary-800',
+        work: 'bg-purple-100 border-purple-300 text-purple-800',
         study: 'bg-secondary-100 border-secondary-300 text-secondary-800',
         exercise: 'bg-success-100 border-success-300 text-success-800',
         rest: 'bg-accent-100 border-accent-300 text-accent-800',

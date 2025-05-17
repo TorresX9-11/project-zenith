@@ -1,7 +1,7 @@
 // Time block related types
 export type DayOfWeek = 'lunes' | 'martes' | 'miércoles' | 'jueves' | 'viernes' | 'sábado' | 'domingo';
 export type BlockType = 'occupied' | 'free';
-export type ActivityType = 'academic' | 'study' | 'exercise' | 'rest' | 'social' | 'personal' | 'other';
+export type ActivityType = 'academic' | 'work' | 'study' | 'exercise' | 'rest' | 'social' | 'personal' | 'other';
 
 export interface TimeBlock {
   id: string;

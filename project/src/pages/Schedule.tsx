@@ -105,6 +105,7 @@ const Schedule: React.FC = () => {
         day,
         startTime: `${hour.toString().padStart(2, '0')}:00`,
         endTime: `${(hour + 1).toString().padStart(2, '0')}:00`,
+        activityType: 'study' // Tipo por defecto para nuevos bloques
       });
       setShowForm(true);
     }
@@ -320,6 +321,12 @@ const Schedule: React.FC = () => {
             startHour={5}
             endHour={22}
             onSlotClick={handleTimeSlotClick}
+            onEditBlock={handleEdit}
+            onDeleteBlock={(block) => {
+              if (window.confirm('¿Estás seguro de que deseas eliminar este bloque?')) {
+                removeTimeBlock(block.id);
+              }
+            }}
           />
         </div>
       )}

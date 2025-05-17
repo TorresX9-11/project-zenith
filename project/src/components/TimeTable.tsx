@@ -1,18 +1,23 @@
 import React from 'react';
 import { TimeBlock, DayOfWeek, ActivityType } from '../types';
-import { Clock } from 'lucide-react';
+import { Clock, Edit, Trash2 } from 'lucide-react';
 
 interface TimeTableProps {
   timeBlocks: TimeBlock[];
   startHour?: number;
   endHour?: number;
   onSlotClick?: (day: DayOfWeek, hour: number) => void;
+  onEditBlock?: (block: TimeBlock) => void;
+  onDeleteBlock?: (block: TimeBlock) => void;
 }
 
 const TimeTable: React.FC<TimeTableProps> = ({
-  timeBlocks,  startHour = 5,
+  timeBlocks,
+  startHour = 5,
   endHour = 22,
-  onSlotClick
+  onSlotClick,
+  onEditBlock,
+  onDeleteBlock
 }) => {
   const days: DayOfWeek[] = [
     'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'
@@ -104,28 +109,66 @@ const TimeTable: React.FC<TimeTableProps> = ({
                 return (
                   <button
                     key={day}
-                    onClick={() => onSlotClick?.(day, hour)}
-                    className={`rounded-md border transition-colors relative overflow-hidden ${
+                    onClick={() => {
+                      if (slot && (onEditBlock || onDeleteBlock)) {
+                        // Si hay un bloque y funciones de edición/eliminación, no llamar a onSlotClick
+                        return;
+                      }
+                      onSlotClick?.(day, hour);
+                    }}
+                    className={`rounded-md border transition-colors relative overflow-hidden group ${
                       slot
                         ? `${getActivityColor(slot.type, slot.activityType)} hover:opacity-90`
                         : 'bg-white border-neutral-200 hover:bg-neutral-50'
                     }`}
                   >
                     {slot && (
-                      <div className="absolute inset-0 p-2 flex flex-col justify-between h-full">
-                        <div>
-                          <div className="text-sm font-medium truncate">{slot.title}</div>
-                          {slot.location && (
-                            <div className="text-xs opacity-75 truncate flex items-center gap-1">
-                              <span className="inline-block w-2 h-2 rounded-full bg-current" />
-                              {slot.location}
-                            </div>
-                          )}
+                      <>
+                        <div className="absolute inset-0 p-2 flex flex-col justify-between h-full">
+                          <div>
+                            <div className="text-sm font-medium truncate">{slot.title}</div>
+                            {slot.location && (
+                              <div className="text-xs opacity-75 truncate flex items-center gap-1">
+                                <span className="inline-block w-2 h-2 rounded-full bg-current" />
+                                {slot.location}
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-xs opacity-75">
+                            {slot.startTime} - {slot.endTime}
+                          </div>
                         </div>
-                        <div className="text-xs opacity-75">
-                          {slot.startTime} - {slot.endTime}
-                        </div>
-                      </div>
+                        
+                        {/* Opciones de edición y eliminación */}
+                        {(onEditBlock || onDeleteBlock) && (
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                            {onEditBlock && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onEditBlock(slot);
+                                }}
+                                className="p-1 bg-white text-neutral-700 rounded-full hover:bg-neutral-100"
+                                title="Editar"
+                              >
+                                <Edit size={16} />
+                              </button>
+                            )}
+                            {onDeleteBlock && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onDeleteBlock(slot);
+                                }}
+                                className="p-1 bg-white text-error-600 rounded-full hover:bg-error-50"
+                                title="Eliminar"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </>
                     )}
                   </button>
                 );

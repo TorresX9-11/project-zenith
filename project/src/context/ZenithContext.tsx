@@ -58,52 +58,85 @@ export const ZenithProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Calculate metrics
   const calculateProductivity = (): number => {
-    const totalTime = 7 * 24; // Total hours in a week
-    const occupiedTime = getTotalOccupiedTime();
-    const productiveActivities = state.activities.filter(a => 
-      a.type === 'academic' || a.type === 'study' || a.type === 'exercise'
-    );
+    // Solo contar bloques de tiempo ocupados con tipos de actividad productiva
+    const productiveTime = state.timeBlocks.reduce((total, block) => {
+      if (block.type === 'occupied' && 
+          block.activityType && 
+          ['academic', 'work', 'study'].includes(block.activityType)) {
+        const [startHour, startMinute] = block.startTime.split(':').map(Number);
+        const [endHour, endMinute] = block.endTime.split(':').map(Number);
+        
+        const start = startHour + (startMinute / 60);
+        const end = endHour + (endMinute / 60);
+        
+        if (end < start) return total;
+        
+        return total + (end - start);
+      }
+      return total;
+    }, 0);
+
+    // Calculamos la productividad basada en el tiempo disponible real (excluyendo tiempo de sueño)
+    const dailyAvailableHours = 16; // 24 horas - 8 horas de sueño
+    const weeklyAvailableHours = dailyAvailableHours * 7;
     
-    const productiveTime = productiveActivities.reduce((total, activity) => 
-      total + activity.duration, 0
-    );
-    
-    // Calculate productivity as percentage of productive time in relation to available time
-    const availableTime = totalTime - (8 * 7); // Subtract sleeping time (8 hours per day)
-    return Math.min(Math.round((productiveTime / availableTime) * 100), 100);
+    // La productividad es el porcentaje del tiempo productivo sobre el tiempo disponible
+    return Math.min(Math.round((productiveTime / weeklyAvailableHours) * 100), 100);
   };
 
   const getActivityDuration = (type: ActivityType): number => {
+    // Solo contar actividades que tienen un bloque de tiempo asociado y válido
     return state.activities
-      .filter(activity => activity.type === type)
-      .reduce((total, activity) => total + activity.duration, 0);
+      .filter(activity => {
+        // Si la actividad tiene un timeBlockId, verificar que el bloque existe
+        if (activity.timeBlockId) {
+          const block = state.timeBlocks.find(b => b.id === activity.timeBlockId);
+          return block && activity.type === type;
+        }
+        return false;
+      })
+      .reduce((total, activity) => {
+        const block = state.timeBlocks.find(b => b.id === activity.timeBlockId);
+        if (!block) return total;
+        
+        // Calcular la duración real basada en el bloque de tiempo
+        const [startHour, startMinute] = block.startTime.split(':').map(Number);
+        const [endHour, endMinute] = block.endTime.split(':').map(Number);
+        
+        const start = startHour + (startMinute / 60);
+        const end = endHour + (endMinute / 60);
+        
+        if (end < start) return total;
+        
+        return total + (end - start);
+      }, 0);
   };
 
   const getTotalFreeTime = (): number => {
-    // Calculate total free time by subtracting occupied blocks from total time
-    const totalWeeklyHours = 7 * 24;
-    return totalWeeklyHours - getTotalOccupiedTime();
+    const totalWeeklyHours = 7 * 24; // 168 hours in a week
+    const occupiedTime = getTotalOccupiedTime();
+    // Ensure we don't return negative values
+    return Math.max(0, totalWeeklyHours - occupiedTime);
   };
 
   const getTotalOccupiedTime = (): number => {
     // Sum all occupied time blocks
     return state.timeBlocks.reduce((total, block) => {
       if (block.type === 'occupied') {
-        // Calculate duration in hours
-        const startHour = parseInt(block.startTime.split(':')[0]);
-        const startMinute = parseInt(block.startTime.split(':')[1]);
-        const endHour = parseInt(block.endTime.split(':')[0]);
-        const endMinute = parseInt(block.endTime.split(':')[1]);
+        // Parse times to numbers
+        const [startHour, startMinute] = block.startTime.split(':').map(Number);
+        const [endHour, endMinute] = block.endTime.split(':').map(Number);
         
-        let duration = endHour - startHour;
-        if (endMinute < startMinute) {
-          duration -= 1;
-          duration += (endMinute + 60 - startMinute) / 60;
-        } else {
-          duration += (endMinute - startMinute) / 60;
+        // Calculate duration in decimal hours
+        const start = startHour + (startMinute / 60);
+        const end = endHour + (endMinute / 60);
+        
+        // Handle cases where end time is less than start time (invalid case)
+        if (end < start) {
+          return total;
         }
         
-        return total + duration;
+        return total + (end - start);
       }
       return total;
     }, 0);

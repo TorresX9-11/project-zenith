@@ -31,11 +31,11 @@ const Activities: React.FC = () => {
   const activityTypes: { value: ActivityType; label: string; color: string }[] = [
     { value: 'academic', label: 'Académica', color: 'bg-primary-100 text-primary-800' },
     { value: 'study', label: 'Estudio', color: 'bg-secondary-100 text-secondary-800' },
-    { value: 'exercise', label: 'Ejercicio', color: 'bg-success-100 text-success-800' },
+    { value: 'exercise', label: 'Ejercicio', color: 'bg-green-100 text-green-800' },
     { value: 'rest', label: 'Descanso', color: 'bg-accent-100 text-accent-800' },
-    { value: 'social', label: 'Social', color: 'bg-warning-100 text-warning-800' },
+    { value: 'social', label: 'Social', color: 'bg-yellow-100 text-yellow-800' },
     { value: 'personal', label: 'Personal', color: 'bg-neutral-100 text-neutral-800' },
-    { value: 'other', label: 'Otra', color: 'bg-error-100 text-error-800' }
+    { value: 'libre', label: 'Libre', color: 'bg-red-100 text-red-800' }
   ];
 
   const days: { value: DayOfWeek; label: string }[] = [

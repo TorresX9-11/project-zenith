@@ -48,12 +48,11 @@ const TimeTable: React.FC<TimeTableProps> = ({
       const colors: Record<ActivityType, string> = {
         academic: 'bg-primary-100 border-primary-300 text-primary-800',
         work: 'bg-purple-100 border-purple-300 text-purple-800',
-        study: 'bg-secondary-100 border-secondary-300 text-secondary-800',
-        exercise: 'bg-success-100 border-success-300 text-success-800',
+        study: 'bg-secondary-100 border-secondary-300 text-secondary-800',        exercise: 'bg-green-100 border-green-200 text-green-800',
         rest: 'bg-accent-100 border-accent-300 text-accent-800',
-        social: 'bg-warning-100 border-warning-300 text-warning-800',
+        social: 'bg-yellow-100 border-yellow-200 text-yellow-800',
         personal: 'bg-neutral-100 border-neutral-300 text-neutral-800',
-        other: 'bg-error-100 border-error-300 text-error-800'
+        libre: 'bg-red-100 border-red-200 text-red-800'
       };
       return colors[activityType];
     }

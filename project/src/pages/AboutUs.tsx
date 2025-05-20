@@ -13,8 +13,8 @@ interface TeamMember {
 const teamMembers: TeamMember[] = [
   {
     name: "Emanuel Torres",
-    role: "Desarrollador",
-    description: "Apasionado por crear soluciones tecnológicas innovadoras.",
+    role: "Desarrollador Backend",
+    description: "Apasionado por la optimización de procesos y la creación de APIs eficientes.",
     imageUrl: "/src/pages/assetsImg/imgPerfil/EmanuelTorres/imgPerfil.jpg"
   },
   {
@@ -25,8 +25,8 @@ const teamMembers: TeamMember[] = [
   },
   {
     name: "Gabriel Ramirez",
-    role: "Desarrollador Backend",
-    description: "Experto en arquitectura de sistemas y optimización de rendimiento.",
+    role: "Diseñador",
+    description: "Creativo y detallista, enfocado en la estética y funcionalidad de la aplicación.",
     imageUrl: "/src/pages/assetsImg/imgPerfil/GabrielRamirez/imgPerfil.jpg"
   }
 ];

@@ -1,4 +1,4 @@
-import React, { createContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { scheduleReducer, initialScheduleState } from '../reducers/scheduleReducer';
 import { ActivityType, ScheduleState, ScheduleAction, TimeBlock, Activity } from '../types';
 import { getTotalActivityDuration } from '../utils/activityUtils';
@@ -77,28 +77,9 @@ export const ZenithProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     
     return Math.min(Math.round((productiveTime / weeklyAvailableHours) * 100), 100);
   };
+
   const getActivityDuration = (type: ActivityType): number => {
-    // Obtener la duración de las actividades
-    const activitiesDuration = getTotalActivityDuration(state.activities, state.timeBlocks, type);
-    
-    // Obtener la duración de los bloques de tiempo que no están vinculados a actividades
-    const blocksDuration = state.timeBlocks
-      .filter(block => 
-        block.type === 'occupied' && 
-        block.activityType === type && 
-        !state.activities.some(a => a.timeBlockId === block.id)
-      )
-      .reduce((total, block) => {
-        const [startHour, startMinute] = block.startTime.split(':').map(Number);
-        const [endHour, endMinute] = block.endTime.split(':').map(Number);
-        
-        const start = startHour + (startMinute / 60);
-        const end = endHour + (endMinute / 60);
-        
-        return end >= start ? total + (end - start) : total;
-      }, 0);
-    
-    return activitiesDuration + blocksDuration;
+    return getTotalActivityDuration(state.activities, state.timeBlocks, type);
   };
 
   const getTotalFreeTime = (): number => {

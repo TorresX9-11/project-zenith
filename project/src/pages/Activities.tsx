@@ -127,21 +127,28 @@ const Activities: React.FC = () => {
     const hour = parseInt(value.split(':')[0]);
     
     if (editingActivity) {
+      const newPreferredTime = {
+        ...(editingActivity.preferredTime || { startHour: 8, endHour: 9 }),
+        [type === 'start' ? 'startHour' : 'endHour']: hour
+      };
+      
       setEditingActivity({
         ...editingActivity,
-        preferredTime: {
-          ...(editingActivity.preferredTime || { startHour: 8, endHour: 9 }),
-          [type === 'start' ? 'startHour' : 'endHour']: hour
-        }
+        preferredTime: newPreferredTime,
+        duration: newPreferredTime.endHour - newPreferredTime.startHour
       });
     } else {
-      setNewActivity(prev => ({
-        ...prev,
-        preferredTime: {
+      setNewActivity(prev => {
+        const newPreferredTime = {
           ...(prev.preferredTime || { startHour: 8, endHour: 9 }),
           [type === 'start' ? 'startHour' : 'endHour']: hour
-        }
-      }));
+        };
+        return {
+          ...prev,
+          preferredTime: newPreferredTime,
+          duration: newPreferredTime.endHour - newPreferredTime.startHour
+        };
+      });
     }
   };
 
@@ -167,14 +174,14 @@ const Activities: React.FC = () => {
       setNewActivity({
         name: '',
         type: 'study',
-        duration: 1,
         priority: 'medium',
         description: '',
         preferredDays: [],
         preferredTime: {
           startHour: 8,
           endHour: 9
-        }
+        },
+        duration: 1 // Se calculará automáticamente cuando se establezca preferredTime
       });
 
       // Esperar a que la actividad se renderice y hacer scroll
@@ -346,12 +353,9 @@ const Activities: React.FC = () => {
                       
                       <div className="flex items-center gap-1 text-neutral-600 text-sm mb-2">
                         <Clock size={14} />
-                        <span>{activity.duration} {activity.duration === 1 ? 'hora' : 'horas'}</span>
-                        {activity.preferredTime && (
-                          <span className="ml-2">
-                            ({activity.preferredTime.startHour}:00 - {activity.preferredTime.endHour}:00)
-                          </span>
-                        )}
+                        <span>{activity.preferredTime ? (
+                          `${activity.preferredTime.startHour}:00 - ${activity.preferredTime.endHour}:00 (${activity.duration} ${activity.duration === 1 ? 'hora' : 'horas'})`
+                        ) : `${activity.duration} ${activity.duration === 1 ? 'hora' : 'horas'}`}</span>
                       </div>
                       
                       {activity.description && (

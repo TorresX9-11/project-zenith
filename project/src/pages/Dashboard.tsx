@@ -1,7 +1,18 @@
 import React from 'react';
 import { useZenith } from '../context/ZenithContext';
 import { ActivityType } from '../types';
-import { BarChart3, Lightbulb, Clock, Brain, TrendingUp, BookOpen, Users, Coffee, Dumbbell, Calendar } from 'lucide-react';
+import { 
+  BarChart3, 
+  Lightbulb, 
+  Clock, 
+  Brain, 
+  TrendingUp, 
+  BookOpen, 
+  Users, 
+  Coffee, 
+  Dumbbell, 
+  Calendar 
+} from 'lucide-react';
 import TimeTable from '../components/TimeTable';
 
 interface StudyTechnique {
@@ -11,25 +22,126 @@ interface StudyTechnique {
   active: boolean;
 }
 
+interface ActivityData {
+  type: ActivityType | 'Libre';
+  hours: number;
+  color: string;
+  bgColor: string;
+  icon: React.ReactNode;
+  label: string;
+}
+
 const Dashboard: React.FC = () => {
   const { 
     state, 
-    calculateProductivity, 
-    getActivityDuration, 
-    getTotalFreeTime, 
-    getTotalOccupiedTime 
+    calculateProductivity,
+    getActivityDuration,
+    getTotalFreeTime,
+    getTotalOccupiedTime
   } = useZenith();
-  
+
   const hasSchedule = state.timeBlocks.length > 0;
   const hasActivities = state.activities.length > 0;
+  const totalOccupiedHours = getTotalOccupiedTime();
+  const totalFreeHours = getTotalFreeTime();
+  const totalWeeklyHours = 24 * 7;
+  // Consideramos 16 horas disponibles por día (24h - 8h de sueño)
+  const dailyAvailableHours = 16;
+  const totalAvailableHours = dailyAvailableHours * 7;
 
-  const studyHours = getActivityDuration('study');
-  const academicHours = getActivityDuration('academic'); 
-  const exerciseHours = getActivityDuration('exercise');
-  const socialHours = getActivityDuration('social');
-  const restHours = getActivityDuration('rest');
-  const productivity = calculateProductivity();
+  // Función auxiliar para calcular porcentajes basados en tiempo disponible
+  const calculatePercentage = (hours: number): number => {
+    return Math.round((hours / totalAvailableHours) * 100);
+  };
 
+  // Función auxiliar para calcular horas totales por tipo
+  const getTotalHours = (type: ActivityType): number => {
+    // Suma las horas de los bloques de tiempo fijos
+    const blockHours = state.timeBlocks
+      .filter(block => block.type === 'occupied' && block.activityType === type)
+      .reduce((total, block) => {
+        const [startHour, startMinute] = block.startTime.split(':').map(Number);
+        const [endHour, endMinute] = block.endTime.split(':').map(Number);
+        const start = startHour + (startMinute / 60);
+        const end = endHour + (endMinute / 60);
+        return total + (end >= start ? end - start : (24 - start) + end);
+      }, 0);
+
+    // Suma las horas de las actividades
+    const activityHours = getActivityDuration(type);
+
+    return blockHours + activityHours;
+  };
+
+  // Cálculo de horas por tipo de actividad
+  const activityData: ActivityData[] = [
+    {
+      type: 'academic',
+      hours: getTotalHours('academic'),
+      color: 'bg-primary-600',
+      bgColor: 'bg-primary-100',
+      icon: <BookOpen size={20} className="text-primary-600" />,
+      label: 'Académico'
+    },
+    {
+      type: 'study',
+      hours: getTotalHours('study'),
+      color: 'bg-secondary-600',
+      bgColor: 'bg-secondary-100',
+      icon: <Brain size={20} className="text-secondary-600" />,
+      label: 'Estudio'
+    },
+    {
+      type: 'work',
+      hours: getTotalHours('work'),
+      color: 'bg-purple-600',
+      bgColor: 'bg-purple-100',
+      icon: <BookOpen size={20} className="text-purple-600" />,
+      label: 'Trabajo'
+    },
+    {
+      type: 'exercise',
+      hours: getTotalHours('exercise'),
+      color: 'bg-green-600',
+      bgColor: 'bg-green-100',
+      icon: <Dumbbell size={20} className="text-green-600" />,
+      label: 'Ejercicio'
+    },
+    {
+      type: 'social',
+      hours: getTotalHours('social'),
+      color: 'bg-yellow-600',
+      bgColor: 'bg-yellow-100',
+      icon: <Users size={20} className="text-yellow-600" />,
+      label: 'Social'
+    },
+    {
+      type: 'rest',
+      hours: getTotalHours('rest'),
+      color: 'bg-accent-600',
+      bgColor: 'bg-accent-100',
+      icon: <Coffee size={20} className="text-accent-600" />,
+      label: 'Descanso'
+    },
+    {
+      type: 'personal',
+      hours: getTotalHours('personal'),
+      color: 'bg-neutral-600',
+      bgColor: 'bg-neutral-100',
+      icon: <Users size={20} className="text-neutral-600" />,
+      label: 'Personal'
+    },
+    {
+      type: 'Libre',
+      hours: totalFreeHours,
+      color: 'bg-red-600',
+      bgColor: 'bg-red-100',
+      icon: <Clock size={20} className="text-red-600" />,
+      label: 'Libre'
+    }
+  ];
+
+  // Técnicas de estudio
   const studyTechniques: StudyTechnique[] = [
     {
       name: 'Técnica Pomodoro',
@@ -51,6 +163,10 @@ const Dashboard: React.FC = () => {
     }
   ];
 
+  // Cálculo de tiempo académico total (académico + estudio)
+  const totalAcademicHours = getTotalHours('academic') + getTotalHours('study');
+
+  // Generación de recomendaciones
   const getRecommendations = (): string[] => {
     if (!hasSchedule) {
       return [
@@ -58,84 +174,43 @@ const Dashboard: React.FC = () => {
         'Agrega todas tus clases y compromisos fijos semanales.'
       ];
     }
-    
-    const recommendations = [];
-    
-    const freeTime = getTotalFreeTime();
-    
-    if (freeTime < 10) {
+
+    const recommendations: string[] = [];
+    const academicPercentage = (totalAcademicHours / totalOccupiedHours) * 100;
+    const exerciseHours = getActivityDuration('exercise');
+    const restHours = getActivityDuration('rest');
+    const freeTimePercentage = (totalFreeHours / totalWeeklyHours) * 100;
+
+    if (freeTimePercentage < 15) {
       recommendations.push('Tu agenda está muy ocupada. Considera reducir algunas actividades para evitar el agotamiento.');
     }
-    
-    if (studyHours < 10 && hasActivities) {
-      recommendations.push('Se recomienda al menos 10 horas de estudio independiente por semana.');
+
+    if (academicPercentage < 30 && hasActivities) {
+      recommendations.push('Se recomienda dedicar al menos un 30% de tu tiempo a actividades académicas y de estudio.');
     }
-    
+
     if (exerciseHours < 3 && hasActivities) {
       recommendations.push('Intenta agregar al menos 3 horas de ejercicio a la semana para mantener un equilibrio saludable.');
     }
-    
-    if (restHours < 5 && hasActivities) {
-      recommendations.push('Programa más tiempo para descanso y ocio. Es importante para mantener la productividad.');
+
+    if (restHours < totalOccupiedHours * 0.15 && hasActivities) {
+      recommendations.push('Programa más tiempo para descanso. Se recomienda al menos un 15% del tiempo ocupado.');
     }
-    
-    if (academicHours > 25) {
-      recommendations.push('Tienes muchas horas de clases. Organiza bien tu tiempo de estudio para cada materia.');
+
+    if (totalAcademicHours > 40) {
+      recommendations.push('Tienes una alta carga académica. Asegúrate de distribuir bien tu tiempo de estudio y descanso.');
     }
-    
+
     if (recommendations.length === 0) {
       recommendations.push('¡Tu distribución de tiempo luce bien equilibrada!');
     }
-    
+
     return recommendations;
   };
 
   const recommendations = getRecommendations();
+  const productivity = calculateProductivity();
 
-  const chartData = [
-    { 
-      type: 'Académico' as ActivityType, 
-      hours: academicHours,
-      color: 'bg-primary-600' 
-    },
-    { 
-      type: 'Trabajo' as ActivityType, 
-      hours: getActivityDuration('work'),
-      color: 'bg-purple-600' 
-    },
-    { 
-      type: 'Estudio' as ActivityType, 
-      hours: studyHours,
-      color: 'bg-secondary-600' 
-    },
-    { 
-      type: 'Ejercicio' as ActivityType, 
-      hours: exerciseHours,
-      color: 'bg-green-600' 
-    },
-    { 
-      type: 'Social' as ActivityType, 
-      hours: socialHours,
-      color: 'bg-yellow-600' 
-    },
-    { 
-      type: 'Descanso' as ActivityType, 
-      hours: restHours,
-      color: 'bg-accent-600' 
-    },
-    { 
-      type: 'Personal' as ActivityType, 
-      hours: getActivityDuration('personal'),
-      color: 'bg-neutral-600' 
-    },
-    { 
-      type: 'Libre' as ActivityType, 
-      hours: getTotalFreeTime(),
-      color: 'bg-red-600' 
-    }
-  ];  const totalOccupiedHours = getTotalOccupiedTime();
-  const totalHours = totalOccupiedHours + getTotalFreeTime();
-  
   return (
     <div className="fade-in">
       <div className="mb-6">
@@ -145,7 +220,7 @@ const Dashboard: React.FC = () => {
         </h1>
         <p className="text-neutral-600">Visualiza y analiza tu distribución de tiempo</p>
       </div>
-      
+
       {!hasSchedule && !hasActivities ? (
         <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-8 text-center">
           <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -158,7 +233,7 @@ const Dashboard: React.FC = () => {
         </div>
       ) : (
         <>
-          {/* Sección de horario */}
+          {/* Horario Semanal */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -169,92 +244,70 @@ const Dashboard: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <Clock size={16} className="text-neutral-500" />
                   <span className="text-sm text-neutral-600">
-                    {getTotalOccupiedTime().toFixed(1)}h ocupadas
+                    {totalOccupiedHours.toFixed(1)}h ocupadas
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock size={16} className="text-success-500" />
                   <span className="text-sm text-success-600">
-                    {getTotalFreeTime().toFixed(1)}h libres
+                    {totalFreeHours.toFixed(1)}h libres
                   </span>
                 </div>
               </div>
-            </div>              <div className="mb-4">                  
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-2">
-                  <div className="p-2 bg-primary-100 text-primary-800 rounded-lg flex items-center gap-2">
-                    <div className="w-4 h-4 bg-primary-600 rounded-full border-2 border-primary-200" />
-                    <span className="text-xs">Académico</span>
+            </div>
+
+            {/* Leyenda de colores */}
+            <div className="mb-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-2">
+                {activityData.map((activity, index) => (
+                  <div key={index} className={`p-2 ${activity.bgColor} rounded-lg flex items-center gap-2`}>
+                    <div className={`w-4 h-4 ${activity.color} rounded-full border-2 border-${activity.color.split('-')[1]}-200`} />
+                    <span className="text-xs">{activity.label}</span>
                   </div>
-                  <div className="p-2 bg-purple-100 text-purple-800 rounded-lg flex items-center gap-2">
-                    <div className="w-4 h-4 bg-purple-600 rounded-full border-2 border-purple-200" />
-                    <span className="text-xs">Trabajo</span>
-                  </div>
-                  <div className="p-2 bg-secondary-100 text-secondary-800 rounded-lg flex items-center gap-2">
-                    <div className="w-4 h-4 bg-secondary-600 rounded-full border-2 border-secondary-200" />
-                    <span className="text-xs">Estudio</span>
-                  </div>
-                  <div className="p-2 bg-green-100 text-green-800 rounded-lg flex items-center gap-2">
-                    <div className="w-4 h-4 bg-green-600 rounded-full border-2 border-green-200" />
-                    <span className="text-xs">Ejercicio</span>
-                  </div>
-                  <div className="p-2 bg-yellow-100 text-yellow-800 rounded-lg flex items-center gap-2">
-                    <div className="w-4 h-4 bg-yellow-600 rounded-full border-2 border-yellow-200" />                    <span className="text-xs">Social</span>
-                  </div>
-                  <div className="p-2 bg-accent-100 text-accent-800 rounded-lg flex items-center gap-2">
-                    <div className="w-4 h-4 bg-accent-600 rounded-full border-2 border-accent-200" />
-                    <span className="text-xs">Descanso</span>
-                  </div>
-                  <div className="p-2 bg-neutral-100 text-neutral-800 rounded-lg flex items-center gap-2">
-                    <div className="w-4 h-4 bg-neutral-600 rounded-full border-2 border-neutral-200" />
-                    <span className="text-xs">Personal</span>
-                  </div>
-                  <div className="p-2 bg-red-100 text-red-800 rounded-lg flex items-center gap-2">
-                    <div className="w-4 h-4 bg-red-600 rounded-full border-2 border-red-200" />
-                    <span className="text-xs">Libre</span>
-                  </div>
-                </div>
+                ))}
               </div>
-              <TimeTable 
+            </div>
+
+            <TimeTable 
               timeBlocks={state.timeBlocks}
               startHour={5}
               endHour={22}
             />
           </div>
 
-          {/* Estadísticas y gráficos existentes */}
+          {/* Distribución de Tiempo y Productividad */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             <div className="col-span-2">
               <div className="bg-white rounded-lg shadow-md p-6 h-full">
                 <h2 className="text-lg font-semibold mb-4">Distribución de Tiempo Semanal</h2>
                 
                 <div className="space-y-4">
-                  {chartData.map(item => (
-                    <div key={item.type} className="flex items-center">
-                      <span className="w-20 text-sm text-neutral-600">{item.type}</span>                      <div className="flex-1 h-6 bg-neutral-100 rounded-full overflow-hidden ml-2">
-                        <div 
-                          className={`h-full ${item.color} transition-all duration-1000 ease-out flex items-center justify-between px-2`}
-                          style={{ width: `${Math.max(5, (item.hours / totalOccupiedHours) * 100)}%` }}
-                        >
-                          <span className="text-white text-xs font-medium">
-                            {item.hours.toFixed(1)}h
-                          </span>
-                          <span className="text-white text-xs font-medium">
-                            {Math.round((item.hours / totalOccupiedHours) * 100)}%
-                          </span>
+                  {activityData.map(activity => {
+                    const percentage = calculatePercentage(activity.hours);
+                    return (
+                      <div key={activity.label} className="flex items-center">
+                        <span className="w-24 text-sm text-neutral-600">{activity.label}</span>
+                        <div className="flex-1 h-6 bg-neutral-100 rounded-full overflow-hidden ml-2">
+                          <div 
+                            className={`h-full ${activity.color} transition-all duration-1000 ease-out flex items-center justify-between px-2`}
+                            style={{ width: `${Math.max(5, percentage)}%` }}
+                          >
+                            <span className="text-white text-xs font-medium">
+                              {activity.hours.toFixed(1)}h
+                            </span>
+                            <span className="text-white text-xs font-medium">
+                              {percentage}%
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
-                
-                {!hasActivities && hasSchedule && (
-                  <p className="text-neutral-500 text-sm italic mt-4">
-                    Agrega actividades para ver más datos en esta gráfica.
-                  </p>
-                )}
               </div>
             </div>
             
+            {/* Productividad */}
             <div className="col-span-1">
               <div className="bg-gradient-to-br from-primary-600 to-primary-700 rounded-lg shadow-md p-6 text-white h-full flex flex-col">
                 <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -270,7 +323,7 @@ const Dashboard: React.FC = () => {
                         style={{ 
                           clipPath: `polygon(50% 50%, 50% 0%, ${50 + productivity/2}% 0%, 100% ${productivity}%, 100% 100%, 0% 100%, 0% ${productivity}%, ${50 - productivity/2}% 0%, 50% 0%)` 
                         }}
-                      ></div>
+                      />
                       <span className="text-4xl font-bold z-10">{productivity}%</span>
                     </div>
                   </div>
@@ -288,7 +341,8 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
+          {/* Recomendaciones y Técnicas de Estudio */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             <div className="col-span-2 bg-white rounded-lg shadow-md p-6">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -336,41 +390,44 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
+          {/* Balance de Actividades */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 className="text-lg font-semibold mb-4">Balance de Actividades</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">              <BalanceCard 
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <BalanceCard 
                 icon={<BookOpen size={20} className="text-primary-600" />}
-                title="Académico"
-                hours={academicHours + studyHours}
-                percentage={Math.round(((academicHours + studyHours) / getTotalOccupiedTime()) * 100) || 0}
+                title="Académico Total"
+                hours={totalAcademicHours}
+                percentage={calculatePercentage(totalAcademicHours)}
                 color="from-primary-500 to-primary-600"
               />
-                <BalanceCard 
+              <BalanceCard 
                 icon={<Dumbbell size={20} className="text-success-600" />}
                 title="Ejercicio"
-                hours={exerciseHours}
-                percentage={Math.round((exerciseHours / getTotalOccupiedTime()) * 100) || 0}
+                hours={getTotalHours('exercise')}
+                percentage={calculatePercentage(getTotalHours('exercise'))}
                 color="from-success-500 to-success-600"
               />
-                <BalanceCard 
+              <BalanceCard 
                 icon={<Users size={20} className="text-warning-600" />}
                 title="Social"
-                hours={socialHours}
-                percentage={Math.round((socialHours / getTotalOccupiedTime()) * 100) || 0}
+                hours={getTotalHours('social')}
+                percentage={calculatePercentage(getTotalHours('social'))}
                 color="from-warning-500 to-warning-600"
               />
-                <BalanceCard 
+              <BalanceCard 
                 icon={<Coffee size={20} className="text-accent-600" />}
                 title="Descanso"
-                hours={restHours}
-                percentage={Math.round((restHours / getTotalOccupiedTime()) * 100) || 0}
+                hours={getTotalHours('rest')}
+                percentage={calculatePercentage(getTotalHours('rest'))}
                 color="from-accent-500 to-accent-600"
               />
             </div>
           </div>
-          
+
+          {/* Resumen de Tiempo */}
           <div className="bg-neutral-100 rounded-lg p-6">
             <h2 className="text-lg font-semibold mb-4">Resumen de Tiempo</h2>
             
@@ -380,9 +437,9 @@ const Dashboard: React.FC = () => {
                   <Clock size={18} className="text-neutral-700" />
                   <h3 className="font-medium text-neutral-800">Tiempo Ocupado</h3>
                 </div>
-                <p className="text-2xl font-bold">{getTotalOccupiedTime().toFixed(1)}h</p>
+                <p className="text-2xl font-bold">{totalOccupiedHours.toFixed(1)}h</p>
                 <p className="text-neutral-500 text-sm">
-                  {Math.round((getTotalOccupiedTime() / (24 * 7)) * 100)}% de la semana
+                  {Math.round((totalOccupiedHours / totalWeeklyHours) * 100)}% de la semana
                 </p>
               </div>
               
@@ -391,9 +448,9 @@ const Dashboard: React.FC = () => {
                   <Clock size={18} className="text-neutral-700" />
                   <h3 className="font-medium text-neutral-800">Tiempo Libre</h3>
                 </div>
-                <p className="text-2xl font-bold">{getTotalFreeTime().toFixed(1)}h</p>
+                <p className="text-2xl font-bold">{totalFreeHours.toFixed(1)}h</p>
                 <p className="text-neutral-500 text-sm">
-                  {Math.round((getTotalFreeTime() / (24 * 7)) * 100)}% de la semana
+                  {Math.round((totalFreeHours / totalWeeklyHours) * 100)}% de la semana
                 </p>
               </div>
               
@@ -403,10 +460,10 @@ const Dashboard: React.FC = () => {
                   <h3 className="font-medium text-neutral-800">Balance</h3>
                 </div>
                 <p className="text-2xl font-bold">
-                  {getTotalOccupiedTime() > 50 ? 'Ocupado' : 'Equilibrado'}
+                  {totalOccupiedHours > (totalWeeklyHours * 0.6) ? 'Ocupado' : 'Equilibrado'}
                 </p>
                 <p className="text-neutral-500 text-sm">
-                  {getTotalFreeTime() < 30 ? 'Considera liberar tiempo' : 'Buen balance de tiempo'}
+                  {totalFreeHours < 30 ? 'Considera liberar tiempo' : 'Buen balance de tiempo'}
                 </p>
               </div>
             </div>
@@ -433,13 +490,13 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ icon, title, hours, percentag
           {icon}
           <h3 className="font-medium">{title}</h3>
         </div>
-        <p className="text-2xl font-bold">{hours}h</p>
+        <p className="text-2xl font-bold">{hours.toFixed(1)}h</p>
       </div>
       <div className="h-2 w-full bg-neutral-100">
         <div 
           className={`h-full bg-gradient-to-r ${color}`}
           style={{ width: `${percentage}%` }}
-        ></div>
+        />
       </div>
       <div className="p-2 text-center text-xs text-neutral-500">
         {percentage}% del total

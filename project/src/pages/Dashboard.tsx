@@ -56,21 +56,26 @@ const Dashboard: React.FC = () => {
 
   // Función auxiliar para calcular horas totales por tipo
   const getTotalHours = (type: ActivityType): number => {
-    // Suma las horas de los bloques de tiempo fijos
-    const blockHours = state.timeBlocks
-      .filter(block => block.type === 'occupied' && block.activityType === type)
-      .reduce((total, block) => {
-        const [startHour, startMinute] = block.startTime.split(':').map(Number);
-        const [endHour, endMinute] = block.endTime.split(':').map(Number);
-        const start = startHour + (startMinute / 60);
-        const end = endHour + (endMinute / 60);
-        return total + (end >= start ? end - start : (24 - start) + end);
-      }, 0);
+    // Para académico y trabajo, sumamos tanto bloques como actividades
+    if (type === 'academic' || type === 'work') {
+      // Suma las horas de los bloques de tiempo fijos
+      const blockHours = state.timeBlocks
+        .filter(block => block.type === 'occupied' && block.activityType === type)
+        .reduce((total, block) => {
+          const [startHour, startMinute] = block.startTime.split(':').map(Number);
+          const [endHour, endMinute] = block.endTime.split(':').map(Number);
+          const start = startHour + (startMinute / 60);
+          const end = endHour + (endMinute / 60);
+          return total + (end >= start ? end - start : (24 - start) + end);
+        }, 0);
 
-    // Suma las horas de las actividades
-    const activityHours = getActivityDuration(type);
-
-    return blockHours + activityHours;
+      // Suma las horas de las actividades adicionales
+      const activityHours = getActivityDuration(type);
+      return blockHours + activityHours;
+    }
+    
+    // Para el resto de actividades, solo usamos las horas ingresadas por el usuario
+    return getActivityDuration(type);
   };
 
   // Cálculo de horas por tipo de actividad

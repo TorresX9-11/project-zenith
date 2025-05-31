@@ -134,26 +134,23 @@ export const scheduleReducer = (state: ScheduleState, action: ScheduleAction): S
     
     case 'UPDATE_ACTIVITY': {
       const updatedActivity = action.payload;
-      let updatedTimeBlocks = state.timeBlocks;
+      let updatedTimeBlocks = [...state.timeBlocks];
       
       // Si la actividad tiene un bloque de tiempo asociado, actualizarlo
       if (updatedActivity.timeBlockId) {
-        const blockToUpdate = state.timeBlocks.find(b => b.id === updatedActivity.timeBlockId);
-        if (blockToUpdate && updatedActivity.preferredTime && updatedActivity.preferredDays?.[0]) {
-          updatedTimeBlocks = state.timeBlocks.map(block =>
-            block.id === updatedActivity.timeBlockId
-              ? {
-                  ...block,
-                  day: updatedActivity.preferredDays[0],
-                  startTime: `${updatedActivity.preferredTime.startHour.toString().padStart(2, '0')}:00`,
-                  endTime: `${updatedActivity.preferredTime.endHour.toString().padStart(2, '0')}:00`,
-                  title: updatedActivity.name,
-                  description: updatedActivity.description || '',
-                  activityType: updatedActivity.type,
-                  type: 'occupied'
-                }
-              : block
-          );
+        const blockIndex = updatedTimeBlocks.findIndex(b => b.id === updatedActivity.timeBlockId);
+        
+        if (blockIndex !== -1 && updatedActivity.preferredTime && updatedActivity.preferredDays?.[0]) {
+          updatedTimeBlocks[blockIndex] = {
+            ...updatedTimeBlocks[blockIndex],
+            day: updatedActivity.preferredDays[0],
+            startTime: `${updatedActivity.preferredTime.startHour.toString().padStart(2, '0')}:00`,
+            endTime: `${updatedActivity.preferredTime.endHour.toString().padStart(2, '0')}:00`,
+            title: updatedActivity.name,
+            description: updatedActivity.description || '',
+            activityType: updatedActivity.type,
+            type: 'occupied'
+          };
         }
       }
       // Si la actividad no tenía bloque pero ahora debería tenerlo
@@ -170,14 +167,17 @@ export const scheduleReducer = (state: ScheduleState, action: ScheduleAction): S
         };
         
         updatedActivity.timeBlockId = newBlock.id;
-        updatedTimeBlocks = [...state.timeBlocks, newBlock];
+        updatedTimeBlocks.push(newBlock);
       }
+      
+      // Actualizar la actividad en el estado
+      const updatedActivities = state.activities.map(activity =>
+        activity.id === updatedActivity.id ? updatedActivity : activity
+      );
       
       return {
         ...state,
-        activities: state.activities.map(activity =>
-          activity.id === updatedActivity.id ? updatedActivity : activity
-        ),
+        activities: updatedActivities,
         timeBlocks: updatedTimeBlocks
       };
     }

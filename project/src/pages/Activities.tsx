@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useZenith } from '../context/ZenithContext';
 import { ActivityType, Activity, DayOfWeek } from '../types';
-import { ListTodo, Plus, Edit, Trash2, Clock, BarChart3, Calendar } from 'lucide-react';
+import { ListTodo, Plus, Trash2, Clock, BarChart3, Calendar } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import TimeTable from '../components/TimeTable';
 import ActivityForm from '../components/ActivityForm';
@@ -156,10 +156,26 @@ const Activities: React.FC = () => {
     e.preventDefault();
     
     if (editingActivity) {
-      updateActivity({
-        ...editingActivity,
-        ...newActivity,
-      } as Activity);
+      // Combinar todos los campos de la actividad en edición
+      const updatedActivity: Activity = {
+        ...editingActivity, // Mantener la ID y otros campos base
+        id: editingActivity.id,
+        name: newActivity.name || editingActivity.name,
+        type: (newActivity.type as ActivityType) || editingActivity.type,
+        priority: newActivity.priority || editingActivity.priority,
+        description: newActivity.description || editingActivity.description || '',
+        preferredDays: newActivity.preferredDays || editingActivity.preferredDays || [],
+        preferredTime: newActivity.preferredTime || editingActivity.preferredTime || {
+          startHour: 8,
+          endHour: 9
+        },
+        duration: newActivity.preferredTime 
+          ? newActivity.preferredTime.endHour - newActivity.preferredTime.startHour 
+          : newActivity.duration || editingActivity.duration,
+        timeBlockId: editingActivity.timeBlockId // Mantener la referencia al bloque de tiempo
+      };
+
+      updateActivity(updatedActivity);
       setEditingActivity(null);
     } else {
       const newActivityId = uuidv4();
@@ -195,20 +211,26 @@ const Activities: React.FC = () => {
       }, 100);
     }
     
+    // Resetear el formulario
+    setNewActivity({
+      name: '',
+      type: 'study',
+      duration: 1,
+      priority: 'medium',
+      description: '',
+      preferredDays: [],
+      preferredTime: {
+        startHour: 8,
+        endHour: 9
+      }
+    });
     setShowForm(false);
     setSelectedTime(null);
   };
-
   const handleCancel = () => {
     setShowForm(false);
     setEditingActivity(null);
     setSelectedTime(null);
-  };
-
-  const handleEdit = (activity: Activity) => {
-    setEditingActivity(activity);
-    setNewActivity(activity);
-    setShowForm(true);
   };
 
   const handleDelete = (id: string) => {
@@ -262,15 +284,20 @@ const Activities: React.FC = () => {
             <ListTodo size={24} className="text-secondary-600" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-secondary-800 mb-2">Centro de Actividades</h2>
-            <div className="text-neutral-700 space-y-2">
+            <h2 className="text-lg font-semibold text-secondary-800 mb-2">Centro de Actividades</h2>            <div className="text-neutral-700 space-y-2">
               <p>Gestiona tus actividades y tareas de forma efectiva. Aquí puedes:</p>
               <ul className="list-disc list-inside ml-4 space-y-1 text-sm">
                 <li>Crear y organizar actividades académicas, laborales y personales</li>
                 <li>Establecer prioridades y fechas límite</li>
+                <li>Eliminar actividades que ya no necesites</li>
                 <li>Visualizar estadísticas de tu distribución de tiempo</li>
                 <li>Recibir recomendaciones personalizadas del sistema</li>
               </ul>
+              <div className="mt-2 p-2 bg-accent-50 border border-accent-100 rounded-md">
+                <p className="text-sm text-accent-700">
+                  <strong>Nota importante:</strong> Para editar una actividad, ve a la sección de "Horario Semanal" donde podrás modificar todos los detalles de tus actividades programadas.
+                </p>
+              </div>
               <div className="mt-3 bg-white bg-opacity-50 p-3 rounded-lg">
                 <p className="text-sm text-secondary-700">
                   <strong>¿Sabías que?</strong> Puedes usar el chatbot para recibir sugerencias sobre cómo organizar mejor tus actividades y maximizar tu productividad.
@@ -399,15 +426,7 @@ const Activities: React.FC = () => {
                           ))}
                         </div>
                       )}
-                      
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => handleEdit(activity)}
-                          className="p-1 text-neutral-500 hover:text-primary-600"
-                          title="Editar"
-                        >
-                          <Edit size={16} />
-                        </button>
+                                <div className="flex justify-end">
                         <button
                           onClick={() => handleDelete(activity.id)}
                           className="p-1 text-neutral-500 hover:text-error-600"

@@ -25,6 +25,8 @@ const ActivityForm: React.FC<ActivityFormProps> = ({
   onDayChange,
   onTimeChange
 }) => {
+  const currentActivity = editingActivity || newActivity;
+  
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6 slide-up">
       <div className="flex justify-between items-center mb-4">
@@ -49,7 +51,7 @@ const ActivityForm: React.FC<ActivityFormProps> = ({
               type="text"
               id="name"
               name="name"
-              value={editingActivity ? editingActivity.name : newActivity.name}
+              value={currentActivity.name || ''}
               onChange={onChange}
               className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               required
@@ -63,7 +65,7 @@ const ActivityForm: React.FC<ActivityFormProps> = ({
             <select
               id="type"
               name="type"
-              value={editingActivity ? editingActivity.type : newActivity.type}
+              value={currentActivity.type || 'study'}
               onChange={onChange}
               className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               required

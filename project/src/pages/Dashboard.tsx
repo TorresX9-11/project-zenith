@@ -249,6 +249,31 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="fade-in">
+      <div className="bg-gradient-to-r from-accent-50 to-primary-50 border border-accent-100 rounded-lg p-6 mb-6">
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0">
+            <BarChart3 size={24} className="text-accent-600" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-accent-800 mb-2">Centro de Análisis y Recomendaciones</h2>
+            <div className="text-neutral-700 space-y-2">
+              <p>Aquí encontrarás un análisis detallado de tu distribución de tiempo y recomendaciones personalizadas:</p>
+              <ul className="list-disc list-inside ml-4 space-y-1 text-sm">
+                <li>Visualiza tu horario semanal y la distribución de actividades</li>
+                <li>Recibe recomendaciones basadas en tu patrón de actividades</li>
+                <li>Monitorea tu productividad y balance de tiempo</li>
+                <li>Descubre técnicas de estudio efectivas</li>
+              </ul>
+              <div className="mt-3 bg-white bg-opacity-50 p-3 rounded-lg">
+                <p className="text-sm text-accent-700">
+                  <strong>¿Necesitas ayuda?</strong> Nuestro chatbot puede ayudarte a interpretar estas métricas y sugerir mejoras para tu organización. ¡Pregúntale sobre cualquier aspecto de tu horario!
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <BarChart3 size={24} className="text-primary-600" />

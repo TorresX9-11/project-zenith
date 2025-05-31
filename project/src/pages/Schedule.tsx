@@ -124,6 +124,29 @@ const Schedule: React.FC = () => {
 
   return (
     <div className="fade-in">
+      <div className="bg-gradient-to-r from-primary-50 to-accent-50 border border-primary-100 rounded-lg p-6 mb-6">
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0">
+            <Info size={24} className="text-primary-600" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-primary-800 mb-2">¡Bienvenido a tu Organizador Personal!</h2>
+            <div className="text-neutral-700 space-y-2">
+              <p>Aquí puedes gestionar tu horario semanal de forma intuitiva. Algunos consejos:</p>
+              <ul className="list-disc list-inside ml-4 space-y-1 text-sm">
+                <li>Haz clic en cualquier espacio vacío del horario para añadir una actividad rápidamente</li>
+                <li>Utiliza diferentes tipos de actividades para organizar mejor tu tiempo</li>
+                <li>¿Necesitas ayuda? Nuestro chatbot integrado está disponible para responder tus preguntas sobre organización del tiempo</li>
+                <li>Recuerda guardar tus cambios después de cada modificación</li>
+              </ul>
+              <p className="text-sm mt-2 text-primary-600">
+                <strong>Consejo Pro:</strong> Comienza agregando tus actividades fijas como clases o trabajo, y luego organiza el resto de tu tiempo alrededor de ellas.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">

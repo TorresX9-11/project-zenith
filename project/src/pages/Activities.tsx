@@ -256,6 +256,31 @@ const Activities: React.FC = () => {
 
   return (
     <div className="fade-in">
+      <div className="bg-gradient-to-r from-secondary-50 to-primary-50 border border-secondary-100 rounded-lg p-6 mb-6">
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0">
+            <ListTodo size={24} className="text-secondary-600" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-secondary-800 mb-2">Centro de Actividades</h2>
+            <div className="text-neutral-700 space-y-2">
+              <p>Gestiona tus actividades y tareas de forma efectiva. Aquí puedes:</p>
+              <ul className="list-disc list-inside ml-4 space-y-1 text-sm">
+                <li>Crear y organizar actividades académicas, laborales y personales</li>
+                <li>Establecer prioridades y fechas límite</li>
+                <li>Visualizar estadísticas de tu distribución de tiempo</li>
+                <li>Recibir recomendaciones personalizadas del sistema</li>
+              </ul>
+              <div className="mt-3 bg-white bg-opacity-50 p-3 rounded-lg">
+                <p className="text-sm text-secondary-700">
+                  <strong>¿Sabías que?</strong> Puedes usar el chatbot para recibir sugerencias sobre cómo organizar mejor tus actividades y maximizar tu productividad.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">

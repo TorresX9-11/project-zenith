@@ -60,11 +60,13 @@ export const ZenithProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           ['academic', 'work', 'study', 'exercise', 'rest'].includes(block.activityType)) {
         const [startHour, startMinute] = block.startTime.split(':').map(Number);
         const [endHour, endMinute] = block.endTime.split(':').map(Number);
-        
-        const start = startHour + (startMinute / 60);
+          const start = startHour + (startMinute / 60);
         const end = endHour + (endMinute / 60);
         
-        if (end < start) return total;
+        // Si el bloque cruza la medianoche, calculamos ambas partes
+        if (end < start) {
+          return total + (24 - start) + end;
+        }
         
         return total + (end - start);
       }
@@ -109,24 +111,30 @@ export const ZenithProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     return blocksDuration + activitiesWithoutBlockDuration;
   };
-
   const getTotalFreeTime = (): number => {
-    const totalWeeklyHours = 7 * 24;
+    const dailyAvailableHours = 16; // 24 horas - 8 horas de sueño
+    const totalWeeklyHours = dailyAvailableHours * 7; // 112 horas semanales disponibles
     const occupiedTime = getTotalOccupiedTime();
     return Math.max(0, totalWeeklyHours - occupiedTime);
-  };
-
-  const getTotalOccupiedTime = (): number => {
+  };  const getTotalOccupiedTime = (): number => {
     return state.timeBlocks.reduce((total, block) => {
       if (block.type === 'occupied') {
         const [startHour, startMinute] = block.startTime.split(':').map(Number);
         const [endHour, endMinute] = block.endTime.split(':').map(Number);
         
+        // Si el bloque está en horas de sueño (22:00 - 06:00), no lo contamos
+        if (startHour >= 22 || startHour < 6) {
+          return total;
+        }
+        
         const start = startHour + (startMinute / 60);
         const end = endHour + (endMinute / 60);
         
-        if (end < start) {
-          return total;
+        // Si el bloque cruza la medianoche o el horario de sueño, ajustamos el tiempo
+        if (end < start || end > 22) {
+          // Si termina después de las 22, contamos solo hasta las 22
+          const adjustedEnd = end > 22 ? 22 : end;
+          return total + (adjustedEnd - start);
         }
         
         return total + (end - start);

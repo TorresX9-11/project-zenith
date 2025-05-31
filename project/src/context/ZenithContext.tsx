@@ -104,14 +104,13 @@ export const ZenithProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return total + activity.duration;
       }, 0);
   };
-
   const getTotalFreeTime = (): number => {
-    const totalWeeklyHours = 7 * 24; // 168 hours in a week
+    const dailyAvailableHours = 16; // 24 horas - 8 horas de sueño
+    const totalWeeklyHours = dailyAvailableHours * 7; // 112 horas semanales disponibles
     const occupiedTime = getTotalOccupiedTime();
     // Ensure we don't return negative values
     return Math.max(0, totalWeeklyHours - occupiedTime);
   };
-
   const getTotalOccupiedTime = (): number => {
     // Sum all occupied time blocks
     return state.timeBlocks.reduce((total, block) => {
@@ -120,13 +119,20 @@ export const ZenithProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         const [startHour, startMinute] = block.startTime.split(':').map(Number);
         const [endHour, endMinute] = block.endTime.split(':').map(Number);
         
+        // Si el bloque está en horas de sueño (22:00 - 06:00), no lo contamos
+        if (startHour >= 22 || startHour < 6) {
+          return total;
+        }
+        
         // Calculate duration in decimal hours
         const start = startHour + (startMinute / 60);
         const end = endHour + (endMinute / 60);
         
-        // Handle cases where end time is less than start time (invalid case)
-        if (end < start) {
-          return total;
+        // Si el bloque cruza la medianoche o el horario de sueño, ajustamos el tiempo
+        if (end < start || end > 22) {
+          // Si termina después de las 22, contamos solo hasta las 22
+          const adjustedEnd = end > 22 ? 22 : end;
+          return total + (adjustedEnd - start);
         }
         
         return total + (end - start);

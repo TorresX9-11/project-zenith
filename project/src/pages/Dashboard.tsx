@@ -31,6 +31,37 @@ interface ActivityData {
   label: string;
 }
 
+interface BalanceCardProps {
+  icon: React.ReactNode;
+  title: string;
+  hours: number;
+  percentage: number;
+  color: string;
+}
+
+const BalanceCard: React.FC<BalanceCardProps> = ({ icon, title, hours, percentage, color }) => {
+  return (
+    <div className="bg-white border border-neutral-200 rounded-lg overflow-hidden">
+      <div className="p-4">
+        <div className="flex items-center gap-2 mb-2">
+          {icon}
+          <h3 className="font-medium">{title}</h3>
+        </div>
+        <p className="text-2xl font-bold">{hours.toFixed(1)}h</p>
+      </div>
+      <div className="h-2 w-full bg-neutral-100">
+        <div 
+          className={`h-full bg-gradient-to-r ${color}`}
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+      <div className="p-2 text-center text-xs text-neutral-500">
+        {percentage}% del total
+      </div>
+    </div>
+  );
+};
+
 const Dashboard: React.FC = () => {
   const { 
     state, 
@@ -444,7 +475,7 @@ const Dashboard: React.FC = () => {
                 </div>
                 <p className="text-2xl font-bold">{totalOccupiedHours.toFixed(1)}h</p>
                 <p className="text-neutral-500 text-sm">
-                  {Math.round((totalOccupiedHours / totalWeeklyHours) * 100)}% de la semana
+                  {Math.round((totalOccupiedHours / totalAvailableHours) * 100)}% de la semana
                 </p>
               </div>
               
@@ -455,57 +486,34 @@ const Dashboard: React.FC = () => {
                 </div>
                 <p className="text-2xl font-bold">{totalFreeHours.toFixed(1)}h</p>
                 <p className="text-neutral-500 text-sm">
-                  {Math.round((totalFreeHours / totalWeeklyHours) * 100)}% de la semana
+                  {Math.round((totalFreeHours / totalAvailableHours) * 100)}% de la semana
                 </p>
               </div>
-              
+
               <div className="bg-white rounded-lg p-4 shadow-sm">
                 <div className="flex items-center gap-2 mb-2">
                   <Clock size={18} className="text-neutral-700" />
                   <h3 className="font-medium text-neutral-800">Balance</h3>
                 </div>
                 <p className="text-2xl font-bold">
-                  {totalOccupiedHours > (totalWeeklyHours * 0.6) ? 'Ocupado' : 'Equilibrado'}
+                  {totalOccupiedHours > (totalAvailableHours * 0.7) 
+                    ? 'Sobrecargado' 
+                    : totalOccupiedHours > (totalAvailableHours * 0.5) 
+                    ? 'Ocupado' 
+                    : 'Equilibrado'}
                 </p>
                 <p className="text-neutral-500 text-sm">
-                  {totalFreeHours < 30 ? 'Considera liberar tiempo' : 'Buen balance de tiempo'}
+                  {totalOccupiedHours > (totalAvailableHours * 0.7)
+                    ? 'Considera reducir actividades'
+                    : totalOccupiedHours < (totalAvailableHours * 0.3)
+                    ? 'Puedes agregar más actividades'
+                    : 'Buen balance de tiempo'}
                 </p>
               </div>
             </div>
           </div>
         </>
       )}
-    </div>
-  );
-};
-
-interface BalanceCardProps {
-  icon: React.ReactNode;
-  title: string;
-  hours: number;
-  percentage: number;
-  color: string;
-}
-
-const BalanceCard: React.FC<BalanceCardProps> = ({ icon, title, hours, percentage, color }) => {
-  return (
-    <div className="bg-white border border-neutral-200 rounded-lg overflow-hidden">
-      <div className="p-4">
-        <div className="flex items-center gap-2 mb-2">
-          {icon}
-          <h3 className="font-medium">{title}</h3>
-        </div>
-        <p className="text-2xl font-bold">{hours.toFixed(1)}h</p>
-      </div>
-      <div className="h-2 w-full bg-neutral-100">
-        <div 
-          className={`h-full bg-gradient-to-r ${color}`}
-          style={{ width: `${percentage}%` }}
-        />
-      </div>
-      <div className="p-2 text-center text-xs text-neutral-500">
-        {percentage}% del total
-      </div>
     </div>
   );
 };

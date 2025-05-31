@@ -284,7 +284,8 @@ const Activities: React.FC = () => {
             <ListTodo size={24} className="text-secondary-600" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-secondary-800 mb-2">Centro de Actividades</h2>            <div className="text-neutral-700 space-y-2">
+            <h2 className="text-lg font-semibold text-secondary-800 mb-2">Centro de Actividades</h2>
+            <div className="text-neutral-700 space-y-2">
               <p>Gestiona tus actividades y tareas de forma efectiva. Aquí puedes:</p>
               <ul className="list-disc list-inside ml-4 space-y-1 text-sm">
                 <li>Crear y organizar actividades académicas, laborales y personales</li>
@@ -296,11 +297,6 @@ const Activities: React.FC = () => {
               <div className="mt-2 p-2 bg-accent-50 border border-accent-100 rounded-md">
                 <p className="text-sm text-accent-700">
                   <strong>Nota importante:</strong> Para editar una actividad, ve a la sección de "Horario Semanal" donde podrás modificar todos los detalles de tus actividades programadas.
-                </p>
-              </div>
-              <div className="mt-3 bg-white bg-opacity-50 p-3 rounded-lg">
-                <p className="text-sm text-secondary-700">
-                  <strong>¿Sabías que?</strong> Puedes usar el chatbot para recibir sugerencias sobre cómo organizar mejor tus actividades y maximizar tu productividad.
                 </p>
               </div>
             </div>
@@ -317,131 +313,151 @@ const Activities: React.FC = () => {
           <p className="text-neutral-600">Gestiona tus actividades para organizar tu tiempo libre</p>
         </div>
         
-        <button 
-          onClick={handleShowForm}
-          className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors flex items-center gap-2"
-        >
-          <Plus size={18} />
-          <span>Nueva Actividad</span>
-        </button>
-      </div>
-
-      {/* Vista del horario */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Calendar size={20} className="text-primary-600" />
-          <span>Horario Semanal</span>
-        </h2>
-        <TimeTable 
-          timeBlocks={state.timeBlocks}
-          onSlotClick={handleTimeSlotClick}
-          startHour={5}
-          endHour={22}
-        />
-      </div>
-      
-      {(showForm || editingActivity) && (
-        <div ref={formRef}>
-          <ActivityForm 
-            editingActivity={editingActivity}
-            newActivity={newActivity}
-            activityTypes={activityTypes}
-            days={days}
-            onSubmit={handleSubmit}
-            onCancel={handleCancel}
-            onChange={handleChange}
-            onDayChange={handleDayChange}
-            onTimeChange={handleTimeChange}
-          />
-        </div>
-      )}
-
-      {!hasActivities && !showForm ? (
-        <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-8 text-center">
-          <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <BarChart3 size={28} className="text-neutral-400" />
-          </div>
-          <h3 className="text-lg font-medium mb-2">Sin actividades</h3>
-          <p className="text-neutral-600 mb-4 max-w-md mx-auto">
-            Agrega actividades para distribuir en tus tiempos libres y mantener un balance entre estudio, ejercicio y descanso.
-          </p>
+        {state.timeBlocks.length > 0 && (
           <button 
-            onClick={() => setShowForm(true)}
-            className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors inline-flex items-center gap-2"
+            onClick={handleShowForm}
+            className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors flex items-center gap-2"
           >
             <Plus size={18} />
             <span>Nueva Actividad</span>
           </button>
+        )}
+      </div>
+
+      {state.timeBlocks.length === 0 ? (
+        <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Calendar size={28} className="text-neutral-400" />
+          </div>
+          <h3 className="text-lg font-medium text-neutral-800 mb-2">Primero configura tu horario</h3>
+          <p className="text-neutral-600 mb-4 max-w-md mx-auto">
+            Para comenzar a gestionar tus actividades, primero necesitas configurar tu horario semanal base. 
+            Esto te ayudará a organizar mejor tu tiempo y visualizar tus actividades de manera más efectiva.
+          </p>
+          <p className="text-sm text-accent-600 bg-accent-50 p-3 rounded-lg inline-block">
+            Dirígete a la sección de "Horario Semanal" para comenzar a agregar tus bloques de tiempo.
+          </p>
         </div>
       ) : (
-        hasActivities && (
-          <div ref={activityGroupsRef} className="space-y-8">
-            {activityGroups.map(group => (
-              <div key={group.type} className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <span className={`px-2 py-1 rounded-md text-sm ${getActivityTypeColor(group.type)}`}>
-                    {group.label}
-                  </span>
-                  <span className="text-neutral-600 text-sm">
-                    ({group.activities.length} {group.activities.length === 1 ? 'actividad' : 'actividades'})
-                  </span>
-                </h2>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {group.activities.map(activity => (
-                    <div 
-                      key={activity.id}
-                      id={`activity-${activity.id}`}
-                      className={`border border-neutral-200 rounded-lg p-4 hover:shadow-sm transition-shadow ${
-                        lastAddedActivityRef.current === activity.id ? 'ring-2 ring-primary-500' : ''
-                      }`}
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-medium">{activity.name}</h3>
-                        <span className={`px-2 py-0.5 rounded-full text-xs ${getPriorityColor(activity.priority)}`}>
-                          {getPriorityLabel(activity.priority)}
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center gap-1 text-neutral-600 text-sm mb-2">
-                        <Clock size={14} />
-                        <span>{activity.preferredTime ? (
-                          `${activity.preferredTime.startHour}:00 - ${activity.preferredTime.endHour}:00 (${activity.duration} ${activity.duration === 1 ? 'hora' : 'horas'})`
-                        ) : `${activity.duration} ${activity.duration === 1 ? 'hora' : 'horas'}`}</span>
-                      </div>
-                      
-                      {activity.description && (
-                        <p className="text-sm text-neutral-600 mb-3">{activity.description}</p>
-                      )}
-                      
-                      {activity.preferredDays && activity.preferredDays.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mb-3">
-                          {activity.preferredDays.map(day => (
-                            <span 
-                              key={day}
-                              className="px-2 py-0.5 bg-neutral-100 rounded text-neutral-600 text-xs"
-                            >
-                              {days.find(d => d.value === day)?.label}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                                <div className="flex justify-end">
-                        <button
-                          onClick={() => handleDelete(activity.id)}
-                          className="p-1 text-neutral-500 hover:text-error-600"
-                          title="Eliminar"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+        <>
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Calendar size={20} className="text-primary-600" />
+              <span>Horario Semanal</span>
+            </h2>
+            <TimeTable 
+              timeBlocks={state.timeBlocks}
+              onSlotClick={handleTimeSlotClick}
+              startHour={5}
+              endHour={22}
+            />
           </div>
-        )
+
+          {(showForm || editingActivity) && (
+            <div ref={formRef}>
+              <ActivityForm 
+                editingActivity={editingActivity}
+                newActivity={newActivity}
+                activityTypes={activityTypes}
+                days={days}
+                onSubmit={handleSubmit}
+                onCancel={handleCancel}
+                onChange={handleChange}
+                onDayChange={handleDayChange}
+                onTimeChange={handleTimeChange}
+              />
+            </div>
+          )}
+
+          {!hasActivities && !showForm ? (
+            <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-8 text-center">
+              <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <BarChart3 size={28} className="text-neutral-400" />
+              </div>
+              <h3 className="text-lg font-medium mb-2">Sin actividades</h3>
+              <p className="text-neutral-600 mb-4 max-w-md mx-auto">
+                Agrega actividades para distribuir en tus tiempos libres y mantener un balance entre estudio, ejercicio y descanso.
+              </p>
+              <button 
+                onClick={() => setShowForm(true)}
+                className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors inline-flex items-center gap-2"
+              >
+                <Plus size={18} />
+                <span>Nueva Actividad</span>
+              </button>
+            </div>
+          ) : (
+            hasActivities && (
+              <div ref={activityGroupsRef} className="space-y-8">
+                {activityGroups.map(group => (
+                  <div key={group.type} className="bg-white rounded-lg shadow-md p-6">
+                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <span className={`px-2 py-1 rounded-md text-sm ${getActivityTypeColor(group.type)}`}>
+                        {group.label}
+                      </span>
+                      <span className="text-neutral-600 text-sm">
+                        ({group.activities.length} {group.activities.length === 1 ? 'actividad' : 'actividades'})
+                      </span>
+                    </h2>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {group.activities.map(activity => (
+                        <div 
+                          key={activity.id}
+                          id={`activity-${activity.id}`}
+                          className={`border border-neutral-200 rounded-lg p-4 hover:shadow-sm transition-shadow ${
+                            lastAddedActivityRef.current === activity.id ? 'ring-2 ring-primary-500' : ''
+                          }`}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="font-medium">{activity.name}</h3>
+                            <span className={`px-2 py-0.5 rounded-full text-xs ${getPriorityColor(activity.priority)}`}>
+                              {getPriorityLabel(activity.priority)}
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center gap-1 text-neutral-600 text-sm mb-2">
+                            <Clock size={14} />
+                            <span>{activity.preferredTime ? (
+                              `${activity.preferredTime.startHour}:00 - ${activity.preferredTime.endHour}:00 (${activity.duration} ${activity.duration === 1 ? 'hora' : 'horas'})`
+                            ) : `${activity.duration} ${activity.duration === 1 ? 'hora' : 'horas'}`}</span>
+                          </div>
+                          
+                          {activity.description && (
+                            <p className="text-sm text-neutral-600 mb-3">{activity.description}</p>
+                          )}
+                          
+                          {activity.preferredDays && activity.preferredDays.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mb-3">
+                              {activity.preferredDays.map(day => (
+                                <span 
+                                  key={day}
+                                  className="px-2 py-0.5 bg-neutral-100 rounded text-neutral-600 text-xs"
+                                >
+                                  {days.find(d => d.value === day)?.label}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          
+                          <div className="flex justify-end">
+                            <button
+                              onClick={() => handleDelete(activity.id)}
+                              className="p-1 text-neutral-500 hover:text-error-600"
+                              title="Eliminar"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+        </>
       )}
     </div>
   );

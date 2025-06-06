@@ -84,7 +84,7 @@ const Home: React.FC = () => {
       
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <FeatureCard 
-          icon={<Calendar className="text-primary-500" size={24} />}
+          icon={<Calendar className="text-primary-500\" size={24} />}
           title="Gestiona tu Horario"
           description="Ingresa tus clases y actividades para visualizar tu semana completa."
           linkTo="/horario"
@@ -94,7 +94,7 @@ const Home: React.FC = () => {
         />
         
         <FeatureCard 
-          icon={<ListTodo className="text-secondary-500" size={24} />}
+          icon={<ListTodo className="text-secondary-500\" size={24} />}
           title="Planifica Actividades"
           description="Agrega actividades de estudio, ejercicio y descanso en tus tiempos libres."
           linkTo="/actividades"
@@ -104,7 +104,7 @@ const Home: React.FC = () => {
         />
         
         <FeatureCard 
-          icon={<BarChart3 className="text-accent-500" size={24} />}
+          icon={<BarChart3 className="text-accent-500\" size={24} />}
           title="Analiza tu Tiempo"
           description="Visualiza métricas de productividad y balance en tu distribución de tiempo."
           linkTo="/dashboard"
